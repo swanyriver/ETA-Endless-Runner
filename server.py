@@ -23,7 +23,7 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
                 print "{} wrote:".format(self.client_address[0])
                 print self.data
                 # just send back the same data, but upper-cased
-                self.request.sendall(self.data.upper())
+                self.request.sendall(self.data.upper()+"\n")
                 #TODO call function to process user movement
                 #TODO call function to pass user text back to other client
 
