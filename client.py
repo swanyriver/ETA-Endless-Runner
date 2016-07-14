@@ -13,18 +13,18 @@ def getUserInput(user):
 
 ##-- MAIN --##
 def main(argv):
-    #specify host A's hostname and port number on the command line.
-    TCP_IP = sys.argv[1] #TODO temp fix
+    #specify host name and port number on the command line.
+    TCP_IP = sys.argv[1] 
     TCP_PORT = int(sys.argv[2])  
     BUFFER_SIZE = 1024
     quit="\quit"
-    userHandle="vertical" #TODO call function to find out which user this is
-    #connect to server
+    userHandle="vertical"
+    #TODO determine if verticalClient or horizontalClient
+
+    #--connect to server--#
     #create sock stream and connect  
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((TCP_IP, TCP_PORT))
-    
-    #TODO determine if verticalClient or horizontalClient
 
     #get initial input
     MESSAGE = getUserInput(userHandle)
@@ -38,7 +38,6 @@ def main(argv):
 
         #allow user to input text
         MESSAGE = getUserInput(userHandle)
-        # TODO check if text is a direction
 
     #send termination message s.send(MESSAGE.encode())
     print("closing connection")
@@ -46,5 +45,4 @@ def main(argv):
     s.close()
 
 if __name__ == "__main__":
-    #TODO add back argv to allow random ports
     main(sys.argv)
