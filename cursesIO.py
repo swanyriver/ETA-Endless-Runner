@@ -5,6 +5,9 @@ import sys
 import time
 import json
 import drawable
+from multiprocessing import Process, Pipe
+import testingServer
+
 
 # Macros for curses magic number functions
 ON = 1
@@ -35,16 +38,6 @@ control_scheme = {
     ord('q'):ACTIONS.quit
 }
 
-class gameEntity():
-    def __init__(self, drawable, y, x):
-        self.drawable = drawable
-        self.y = y
-        self.x = x
-
-        #todo init animation
-        #self.drawingIndex = 0
-        #self.timeToChange =
-
 def log(str):
     sys.stderr.write(str)
 
@@ -63,74 +56,80 @@ def startCurses():
 
 
 def exitCurses(screen):
-    curses.nocbreak();
-    screen.keypad(OFF);
+    curses.nocbreak()
+    screen.keypad(OFF)
     screen.nodelay(OFF)
     curses.curs_set(ON)
     curses.echo()
     curses.endwin()
 
-#todo will also need to send player identifier
-def outgoingJson (action):
-    outjson = json.dumps({"action": action, "clientID": "todo define method for distinguishing clients"})
-    log(outjson)
-    return outjson
+# #todo will also need to send player identifier
+# def outgoingJson (action):
+#     outjson = json.dumps({"action": action, "clientID": "todo define method for distinguishing clients"})
+#     log(outjson)
+#     return outjson
 
-#todo, change param to outpipe,  dont modify object
-def respondToInput(in_char_num, gameState):
+class localGame():
+    def __init__(self, charDrawing, charStarty, charStartx):
+        self.charDrawing = charDrawing
+        self.charX = charStartx
+        self.charY = charStarty
+
+def respondToInput(in_char_num, sendpipe):
     action = control_scheme.get(in_char_num)
-    directional_change = {
-        ACTIONS.left: (0, -1),
-        ACTIONS.right: (0, 1),
-        ACTIONS.up: (-1, 0),
-        ACTIONS.down: (1, 0)
-    }
     if action:
-        positionDelta = directional_change.get(action, (0, 0))
-        log("Respond to input" + str(positionDelta) + "\n")
-
-        gameState[0].y += positionDelta[0]
-        gameState[0].x += positionDelta[1]
-        #log("character at: %s\n"%(str(gameState.getCharPos())))
+        log("sending input to server: " + str(action) + "\n")
+        sendpipe.send(action)
 
 
 def refreshScreen(screen, gameState):
     #log("Refreshing screen\n")
     screen.erase()
-    for entity in gameState:
-        y,x = entity.y, entity.x
-        for line in entity.drawable.drawing:
-             #todo use proper color pair
-             screen.addstr(y, x, line, curses.color_pair(1))
-             y += 1
+    # for entity in gameState:
+    #     y,x = entity.y, entity.x
+    #     for line in entity.drawable.drawing:
+    #          #todo use proper color pair
+    #          screen.addstr(y, x, line, curses.color_pair(1))
+    #          y += 1
+
+    y, x = gameState.charY, gameState.charX
+    for line in gameState.charDrawing:
+        # todo use proper color pair
+        screen.addstr(y, x, line, curses.color_pair(0))
+        y += 1
 
 
-def checkForUpdate(inpipe, localGame):
-    pass
+def checkForUpdate(recPipe, localGame):
+    while recPipe.poll():
+        localGame.charY, localGame.charX = recPipe.recv()
+
 
 
 # input is captured constantly but screen refreshes on interval
 # no-sleep version of process loop
-def constantInputReadLoop(screen, localGame, outpipe, inpipe):
+def constantInputReadLoop(screen, localGame, sendPipe, recPipe):
     log("constant input loop initiated\n")
-    lastRefresh = time.time()
+
+    lastRefresh = 0
+
     while True:
-        # primary input and output loop
-        char_in = screen.getch()
-        if control_scheme.get(char_in) == ACTIONS.quit:
-            break
-        if char_in != curses.ERR:
-            log("input: %r %s %r\n" %
-                             (char_in, chr(char_in) if 0 <= char_in < 256 else "{Non Ascii}",
-                              curses.keyname(char_in)))
-
-        respondToInput(char_in, localGame)
-#        respondToInput(char_in, outpipe)
-
-        checkForUpdate(inpipe, localGame)
+        checkForUpdate(recPipe, localGame)
         if time.time() - lastRefresh > SCREEN_REFRESH:
             lastRefresh = time.time()
             refreshScreen(myScreen, localGame)
+
+        # primary input and output loop
+        char_in = screen.getch()
+
+        if char_in != curses.ERR:
+            # log("input: %r %s %r\n" %
+            #                  (char_in, chr(char_in) if 0 <= char_in < 256 else "{Non Ascii}",
+            #                   curses.keyname(char_in)))
+            respondToInput(char_in, sendPipe)
+
+            if control_scheme.get(char_in) == ACTIONS.quit:
+                break
+
 
 
 #temp
@@ -138,18 +137,27 @@ charDraw = ["  *  ",
                 " <*> ",
                 "<***>",
                 " ^ ^ "]
-character = gameEntity(drawable.drawable(charDraw, "character"),  0, 0 )
 
 
 if __name__ == '__main__':
 
-    localGame = [character]
-    outpipe = None
-    inpipe = None
-
+    sendPipe, gamein = Pipe()
+    recPipe, gameout = Pipe()
 
     myScreen = startCurses()
 
-    constantInputReadLoop(myScreen, localGame, outpipe, inpipe)
+    maxY, maxX = myScreen.getmaxyx()
+
+    gameServer = Process(target=testingServer.gameServer, args=(maxY, maxX, gamein, gameout))
+    gameServer.start()
+    
+    recPipe.poll(None)
+    y,x = recPipe.recv()
+
+    gamestate = localGame(charDraw, y, x)
+
+    constantInputReadLoop(myScreen, gamestate, sendPipe, recPipe)
+
+
 
     exitCurses(myScreen)
