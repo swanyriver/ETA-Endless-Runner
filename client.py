@@ -18,13 +18,14 @@ def main(argv):
     TCP_PORT = int(sys.argv[2])  
     BUFFER_SIZE = 1024
     quit="\quit"
-    userHandle="vertical"
-    #TODO determine if verticalClient or horizontalClient
 
     #--connect to server--#
     #create sock stream and connect  
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((TCP_IP, TCP_PORT))
+
+    userHandle="vertical"
+    #TODO determine if verticalClient or horizontalClient
 
     #get initial input
     MESSAGE = getUserInput(userHandle)
@@ -34,8 +35,8 @@ def main(argv):
         #send message
         s.send(MESSAGE.encode())
         data = s.recv(BUFFER_SIZE).decode()
+        #TODO replace write with sending data to curses client
         sys.stdout.write(data)
-
         #allow user to input text
         MESSAGE = getUserInput(userHandle)
 
