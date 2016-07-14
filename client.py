@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#/usr/bin/python2.7
 # references
 # https://wiki.python.org/moin/TcpCommunication 
 import sys
@@ -12,14 +12,13 @@ def getUserInput(user):
     return userInput
 
 ##-- MAIN --##
-def main():
+def main(argv):
     #specify host A's hostname and port number on the command line.
-    TCP_IP = "localhost" #sys.argv[1] TODO temp fix
-    TCP_PORT = 9999 #int(sys.argv[2])  
+    TCP_IP = sys.argv[1] #TODO temp fix
+    TCP_PORT = int(sys.argv[2])  
     BUFFER_SIZE = 1024
     quit="\quit"
     userHandle="vertical" #TODO call function to find out which user this is
-
     #connect to server
     #create sock stream and connect  
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,11 +40,11 @@ def main():
         MESSAGE = getUserInput(userHandle)
         # TODO check if text is a direction
 
-    print("closing")
-
+    #send termination message s.send(MESSAGE.encode())
+    print("closing connection")
     #close connection
     s.close()
 
 if __name__ == "__main__":
-    main()#TODO add back argv to allow random ports
-
+    #TODO add back argv to allow random ports
+    main(sys.argv)
