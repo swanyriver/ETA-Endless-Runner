@@ -1,13 +1,12 @@
 # Proof of concept test for curses based input and output on flip server
 
 import curses
-import sys
 import time
 import json
 import drawable
 from multiprocessing import Process, Pipe
 import testingServer
-
+from log import log
 
 # Macros for curses magic number functions
 ON = 1
@@ -37,10 +36,6 @@ control_scheme = {
     27:ACTIONS.quit, #escape key
     ord('q'):ACTIONS.quit
 }
-
-def log(str):
-    sys.stderr.write(str)
-    sys.stderr.flush()
 
 
 def startCurses():
@@ -140,6 +135,26 @@ charDraw = ["  *  ",
                 " ^ ^ "]
 
 
+def cursesEngine(sendPipe, recPipe):
+    myScreen = startCurses()
+
+    #todo determine if terminal is sufficient size for predifined 80 X 24 minus chat window
+    maxY, maxX = myScreen.getmaxyx()
+
+    #todo get first renderable world from server
+
+    #get characters initial position before begining render
+    recPipe.poll(None)
+    y, x = recPipe.recv()
+
+    gamestate = localGame(charDraw, y, x)
+
+    constantInputReadLoop(myScreen, gamestate, sendPipe, recPipe)
+
+    exitCurses(myScreen)
+
+
+#used for independent testing
 if __name__ == '__main__':
 
     sendPipe, gamein = Pipe()
@@ -158,7 +173,5 @@ if __name__ == '__main__':
     gamestate = localGame(charDraw, y, x)
 
     constantInputReadLoop(myScreen, gamestate, sendPipe, recPipe)
-
-
 
     exitCurses(myScreen)
