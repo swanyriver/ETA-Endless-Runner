@@ -1,6 +1,7 @@
 import sys
 import json
 import os
+import glob
 
 class ParseAssetError(Exception):
     pass
@@ -108,16 +109,18 @@ def getAllAssets(debug = False):
 
     graphicAssets = {}
 
-    for f in os.listdir("graphics"):
-        with open("graphics/" + f, 'r') as assetFile:
+    for f in glob.glob("graphics/*.json"):
+        name = f.split("/")[-1]
+        name = name.split(".")[0]
+        with open(f, 'r') as assetFile:
             try:
                 data = json.load(assetFile)
             except ValueError:
                 if debug: print f, " failed to decode json"
                 continue
             try:
-                asset = GraphicAsset(data, f)
-                graphicAssets[f] = asset
+                asset = GraphicAsset(data, name)
+                graphicAssets[name] = asset
             except ParseAssetError as err:
                 if debug: print f, " failed to construct: ", err
 
