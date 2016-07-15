@@ -2,8 +2,6 @@
 
 import curses
 import time
-import json
-import drawable
 from multiprocessing import Process, Pipe
 import testingServer
 from log import log
