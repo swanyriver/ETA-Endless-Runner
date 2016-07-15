@@ -10,17 +10,12 @@ class ParseAssetError(Exception):
 def drawCharacterAndHitbox(drawing, hitbox):
 
     #convert hitbox to 2d array
-    hitboxstring = []
+    hitboxstring = ""
     for y in range(len(drawing)):
-        line = ""
+        hitboxstring += "\n" + drawing[y] + " | "
         for x in range(len(drawing[0])):
-            line += "#" if (y,x) in hitbox else " "
-        hitboxstring.append(line)
-
-    for y in range(len(drawing)):
-        print drawing[y], " | ", hitboxstring[y]
-
-    print ""
+            hitboxstring += "#" if (y,x) in hitbox else " "
+    return hitboxstring
 
 
 def getHitbox(height, width, drawing):
@@ -99,10 +94,10 @@ class GraphicAsset():
         #assert hitboxs are same for all drawings
         for d in self.drawings[1:]:
             if getHitbox(self.height, self.width, d) != self.hitbox:
-                print self.name, "Hitbox error:"
-                drawCharacterAndHitbox(self.drawings[0], self.hitbox)
-                drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
-                raise ParseAssetError("hitbox for each drawing must be the same, because server will not know what animation frame is showing on each client")
+                errorString = "hitbox for each drawing must be the same, because server will not know what animation frame is showing on each client"
+                errorString += drawCharacterAndHitbox(self.drawings[0], self.hitbox)
+                errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
+                raise ParseAssetError(errorString)
 
 #will return a dictionary of name:assets
 def getAllAssets(debug = False):
