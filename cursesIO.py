@@ -5,6 +5,9 @@ import time
 from multiprocessing import Process, Pipe
 import testingServer
 from log import log
+import graphicAssets
+import gameState
+import json
 
 # Macros for curses magic number functions
 ON = 1
@@ -76,6 +79,7 @@ def respondToInput(in_char_num, sendpipe):
         sendpipe.send(action)
 
 
+
 def refreshScreen(screen, gameState):
     #log("Refreshing screen\n")
     screen.erase()
@@ -93,6 +97,21 @@ def refreshScreen(screen, gameState):
         y += 1
 
 
+def createScreenArray(entitiesJson, assetLibrary):
+    screen = []
+    #todo add error handling
+    #todo maybe this should be handled in the gameState.py file
+
+    entities = json.loads(entitiesJson)
+
+    for e in entities:
+        e['graphicAsset'] = assetLibrary[e['graphicAsset']]
+        screen.append(gameState.gameEntity(**e))
+
+    log("parsed screen" + str(screen) + "\n")
+    return screen
+
+
 def checkForUpdate(recPipe, localGame):
     while recPipe.poll():
         localGame.charY, localGame.charX = recPipe.recv()
@@ -101,7 +120,7 @@ def checkForUpdate(recPipe, localGame):
 
 # input is captured constantly but screen refreshes on interval
 # no-sleep version of process loop
-def constantInputReadLoop(screen, localGame, sendPipe, recPipe):
+def constantInputReadLoop(screen, localGame, sendPipe, recPipe, assetLibrary):
     log("constant input loop initiated\n")
 
     lastRefresh = 0
@@ -126,7 +145,7 @@ def constantInputReadLoop(screen, localGame, sendPipe, recPipe):
 
 
 
-#temp
+#temp #todo remove
 charDraw = ["  *  ",
                 " <*> ",
                 "<***>",
@@ -147,7 +166,7 @@ def cursesEngine(sendPipe, recPipe):
 
     gamestate = localGame(charDraw, y, x)
 
-    constantInputReadLoop(myScreen, gamestate, sendPipe, recPipe)
+    constantInputReadLoop(myScreen, gamestate, sendPipe, recPipe, graphicAssets.getAllAssets())
 
     exitCurses(myScreen)
 
@@ -170,6 +189,6 @@ if __name__ == '__main__':
 
     gamestate = localGame(charDraw, y, x)
 
-    constantInputReadLoop(myScreen, gamestate, sendPipe, recPipe)
+    constantInputReadLoop(myScreen, gamestate, sendPipe, recPipe,  graphicAssets.getAllAssets())
 
     exitCurses(myScreen)
