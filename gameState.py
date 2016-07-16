@@ -3,7 +3,7 @@ import graphicAssets
 import json
 
 #todo add color
-pixel = namedtuple("pixel", ['y','x','char'])
+Pixel = namedtuple("pixel", ['y', 'x', 'char'])
 
 class gameEntity():
     def __init__(self, graphicAsset, y, x):
@@ -28,19 +28,10 @@ class gameEntity():
     #todo add color
     #todo choose drawing index by animation sequence
     def getDrawing(self):
-        return [pixel(y, x, self.graphic.drawings[0][y][x])
+        return [Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[0][y][x]))
                 for y in range(self.graphic.height)
                 for x in range(self.graphic.width)
                 if self.graphic.drawings[0][y][x] != " "]
-
-
-# class screen():
-#     DEAD =(-1,-1)
-#     def __init__(self, entities):
-#         #creates a map of hitboxes
-#
-#
-
 
 
 #for testing
@@ -50,13 +41,20 @@ if __name__ == '__main__':
     import log
 
     assets = graphicAssets.getAllAssets()
-    screen = []
+    entities = []
     for k in [random.choice(assets.keys()) for _ in range(6)]:
         y,x = random.randint(0, 20 - assets[k].height - 1), random.randint(0, 80 - assets[k].width - 1)
-        screen.append(gameEntity(assets[k], y, x))
+        entities.append(gameEntity(assets[k], y, x))
 
-    log.log(str(screen))
+    log.log(str(entities) + '\n')
 
-    cursesIO.createScreenArray(str(screen), assets)
+    cursesEntities = cursesIO.createScreenArray(str(entities), assets)
+    cursesScreen = cursesIO.startCurses()
+    cursesIO.renderEntities(cursesScreen,cursesEntities)
 
+    while 1:
+        char_in = cursesScreen.getch()
+        if char_in == ord('q'): break
+
+    cursesIO.exitCurses(cursesScreen)
 

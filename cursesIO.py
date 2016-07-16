@@ -97,20 +97,27 @@ def refreshScreen(screen, gameState):
         y += 1
 
 
+#todo connect to network pipe, and use to update local game state
 def createScreenArray(entitiesJson, assetLibrary):
-    screen = []
+    entities = []
     #todo add error handling
     #todo maybe this should be handled in the gameState.py file
 
-    entities = json.loads(entitiesJson)
+    entitiesToParse = json.loads(entitiesJson)
 
-    for e in entities:
+    for e in entitiesToParse:
         e['graphicAsset'] = assetLibrary[e['graphicAsset']]
-        screen.append(gameState.gameEntity(**e))
+        entities.append(gameState.gameEntity(**e))
 
-    log("parsed screen" + str(screen) + "\n")
-    return screen
+    log("parsed entities" + str(entities) + "\n")
+    return entities
 
+#todo call on fram refresh cycle
+#items later in array will be drawn overtop of items under
+def renderEntities(screen, entities):
+    for e in entities:
+        for pixel in e.getDrawing():
+            screen.addch(*pixel)
 
 def checkForUpdate(recPipe, localGame):
     while recPipe.poll():
