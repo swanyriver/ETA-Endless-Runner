@@ -45,5 +45,6 @@ def main(argv):
     #close connection
     s.close()
 
+#--MAIN--#
 if __name__ == "__main__":
     main(sys.argv)

@@ -6,24 +6,21 @@ from SocketServer import BaseRequestHandler
 
 class ThreadedTCPRequestHandler(BaseRequestHandler):
 
-    #def handle(self):
-    #    data = self.request.recv(1024)
-    #    cur_thread = threading.current_thread()
-    #    response = "{}: {}".format(cur_thread.name, data)
-    #    self.request.sendall(response)
-
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client
         while serverActive:
             received=self.request.recv(1024)
+            #if nothing received close server
             if received==0:
                 serverActive=False
+                print "nothing received end server" #DEBUG only
             else:
+                print "in server"#DEBUG only
                 data = self.request.recv(1024)
                 print data
-                cur_thread = threading.current_thread()
-                response = "{}: {}".format(cur_thread.name, data)
+                cur_thread = threading.current_thread() #?TODO
+                response = "{}: {}".format(cur_thread.name, data)#?TODO
                 self.request.sendall(response)
                 # just send back the same data, but upper-cased
                 self.request.sendall(self.data.upper()+"\n")
