@@ -8,6 +8,7 @@ from log import log
 import graphicAssets
 import gameEntities
 import json
+from networkKeys import *
 
 # Macros for curses magic number functions
 ON = 1
@@ -104,10 +105,6 @@ def respondToInput(in_char_num, sendpipe):
 
 
 def checkForUpdate(recPipe, localGame):
-    kSCREEN = "screen"
-    kCHAR = "charPos"
-    kGAMEOVER = "gameOver"
-    ENTITYKEYS = {"graphicAsset": unicode, "x": int, "y": int}
 
     while recPipe.poll():
         networkMessage = recPipe.recv()

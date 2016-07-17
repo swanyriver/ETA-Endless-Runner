@@ -1,6 +1,7 @@
 from collections import namedtuple
 import graphicAssets
 import json
+from networkKeys import *
 
 #todo add color
 Pixel = namedtuple("pixel", ['y', 'x', 'char'])
@@ -38,9 +39,6 @@ class gameEntity():
 #char Y and X are ints
 #gameOver should be a dictionary with k:v needed at end of game reasonForEnd (death, other client), score
 def JSONforNetwork(screen=None, charY=None, charX=None, gameOver=None):
-    kSCREEN = "screen"
-    kCHAR = "charPos"
-    kGAMEOVER = "gameOver"
     output = {}
     if screen:
         output[kSCREEN] = [{"graphicAsset":e.graphic.name, "x": e.x, "y": e.y} for e in screen]
