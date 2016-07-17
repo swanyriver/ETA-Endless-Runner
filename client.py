@@ -4,6 +4,9 @@
 import sys
 import SocketServer
 import socket
+import cursesIO
+from multiprocessing import Process, Pipe
+from log import log
 
 #TODO currently breaksif newline entered first
 
@@ -27,32 +30,39 @@ def main(argv):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((TCP_IP, TCP_PORT))
 
+    #set non blocking mode for socket
+    # very aggressive raises error immediately, check for socket.error exception
+    #s.setblocking(0)
+    #will alternate between sending messages and recieving with socket.timeout exception
+    s.settimeout(.2)
+
     userHandle="vertical"
     #TODO determine if verticalClient or horizontalClient
 
-    #get initial input
-    MESSAGE = getUserInput(userHandle)
+    cursesEnd, networkEnd = Pipe(duplex=True)
+    cursesProcess = Process(target=cursesIO.cursesEngine, args=(cursesEnd,))
+    cursesProcess.start()
 
-    #while the user hasn't quit send and receive msgs
-    while(MESSAGE != quit):
+    while cursesProcess.is_alive():
 
-        s.sendall(MESSAGE)
-        response = s.recv(1024)
-        print "Received: {}".format(response)
+        if networkEnd.poll():
+            msg = networkEnd.recv()
+            log("(NET MSG-FROM-CURSES):" + str(type(msg)) + str(msg) + "\n")
 
-        #TODO REMOVE
-        #send message
-        #s.send(MESSAGE.encode())
-        #data = s.recv(BUFFER_SIZE).decode()
-        #sys.stdout.write(data)
+            #todo megan,  add handler tag?
+            s.sendall(msg + "\n")
 
-        #allow user to input text
-        #TODO replace write with sending data to curses client
+        try:
+            updateFromServer = s.recv(BUFFER_SIZE)
+            updateFromServer = updateFromServer.decode()
+            log("(NET MSG-TO-CURSES):" + updateFromServer + "\n")
+            networkEnd.send(updateFromServer)
+        except socket.timeout:
+            pass
 
-        MESSAGE = getUserInput(userHandle)
 
     #send termination message s.send(MESSAGE.encode())
-    print("closing connection")
+    log("(NET): closing connection")
     #close connection
     s.close()
 
