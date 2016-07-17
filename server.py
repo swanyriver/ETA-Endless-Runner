@@ -1,5 +1,20 @@
 #!/usr/bin/python2.7
 import SocketServer
+
+#temporary
+import dummyGameServer
+
+def inputToMove(msg, gameServer):
+    if msg == "w":
+        gameServer.moveUp()
+    elif msg == "a":
+        gameServer.moveLeft()
+    elif msg == "s":
+        gameServer.moveDown()
+    elif msg == "d":
+        gameServer.moveRight()
+
+
 #Server
 #references : https://docs.python.org/2/library/socketserver.html
 
@@ -14,6 +29,10 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client
+
+        myDummyServer = dummyGameServer.DummyGameServer()
+        self.request.sendall(myDummyServer.getGameUpdate() + "\n")
+
         while serverActive:
             received=self.request.recv(1024)
             if received==0:
@@ -23,7 +42,11 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
                 print "{} wrote:".format(self.client_address[0])
                 print self.data
                 # just send back the same data, but upper-cased
-                self.request.sendall(self.data.upper()+"\n")
+
+                #todo remove temp dummy server functions
+                inputToMove(self.data, myDummyServer)
+                self.request.sendall(myDummyServer.getGameUpdate() + "\n")
+
                 #TODO call function to process user movement
                 #TODO call function to pass user text back to other client
 
