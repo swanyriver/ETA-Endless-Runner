@@ -20,7 +20,7 @@ class DummyGameServer():
         # log("JSON OF ENTITIES:\n" + gameEntities.JSONforNetwork(screen=entities))
         return entities
 
-    WORLD_REFRESH = 25
+    WORLD_REFRESH = 10
     def __init__(self):
         self.GraphicAssets = graphicAssets.getAllAssets()
         self.refreshCountdown = 0
