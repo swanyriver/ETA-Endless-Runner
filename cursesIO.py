@@ -46,17 +46,19 @@ class gameState():
         #todo this is very fragile, consider another way of selecting character drawing
         self.character = gameEntities.gameEntity(assets["character"], None, None)
 
-    def newScreen(self, entities):
+    def newScreen(self, newEntities):
         self.entities = []
-        for e in entities:
+        for e in newEntities:
             e['graphicAsset'] = self.assets[e['graphicAsset']]
-            entities.append(gameEntities.gameEntity(**e))
-
+            self.entities.append(gameEntities.gameEntity(**e))
         #character position is invalidated on new screen #todo ensure char pos is always transmitted after new screen
         self.character.setYX(None, None)
+        log("(CURSES-GAME): new screens entities: (%d) "%len(self.entities)
+            + str(self.entities) + "\n")
 
     def updateCharPos(self, y, x):
         self.character.setYX(y, x)
+        log("(CURSES-GAME): char new pos %s\n"%(str(self.character.getYX())))
 
     def drawEntity(self, entity, screen):
         for pixel in filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX,
@@ -64,11 +66,12 @@ class gameState():
             screen.addch(*pixel)
 
     def render(self, screen):
+        screen.erase()
         for e in self.entities:
             self.drawEntity(e, screen)
 
         if None not in self.character.getYX():
-            self.drawEntity(self.character)
+            self.drawEntity(self.character, screen)
 
 
 def startCurses():
@@ -130,10 +133,10 @@ def checkForUpdate(recPipe, localGame):
             if not isinstance(entitiesArray, list):
                 log("(CURSES NET-IN ERROR): screen value is not an array\n")
             else:
-                filter(lambda e: isinstance(e,dict) and
+                entitiesArray = filter(lambda e: (isinstance(e, dict) and
                                  len(e) == len(ENTITYKEYS) and
-                                 all(isinstance(e.get(k), typ) for k,typ in ENTITYKEYS),
-                       entitiesArray)
+                                 all(isinstance(e.get(k, None), typ) for k, typ in ENTITYKEYS.items())),
+                                 entitiesArray)
                 if not entitiesArray:
                     log("(CURSES NET-IN ERROR): screen array contains no valid entities\n")
                 else:
@@ -161,7 +164,7 @@ def constantInputReadLoop(screen, networkPipe, localGame):
 
         # check for message from network
         gameOver, message = checkForUpdate(networkPipe, localGame)
-        if gameOver:
+        if not gameOver:
             log("(CURSES GAMEOVER):%r\n"%message)
             break
 
@@ -197,6 +200,8 @@ def cursesEngine(networkPipe):
     constantInputReadLoop(myScreen, networkPipe, localGame)
 
     exitCurses(myScreen)
+    log("(CURSES): curses screen exited\n")
+
 
 
 #used for independent testing

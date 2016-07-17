@@ -15,8 +15,7 @@ def getRandomWorld(asset):
         y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
         entities.append(gameEntities.gameEntity(assets[k], y, x))
 
-    log("JSON OF ENTITIES:\n" + gameEntities.JSONforNetwork(screen=entities))
-
+    #log("JSON OF ENTITIES:\n" + gameEntities.JSONforNetwork(screen=entities))
     return entities
 
 #temp test
@@ -52,9 +51,14 @@ while cursesProcess.is_alive():
     charx += random.randint(-2,2)
     chary += random.randint(-2,2)
 
+
     if i % 10 == 0:
-        networkEnd.send(gameEntities.JSONforNetwork(screen=getRandomWorld(assets),
-                                                    charX=charx, charY=chary))
+        networkMessage = gameEntities.JSONforNetwork(screen=getRandomWorld(assets),
+                                                    charX=charx, charY=chary)
     else:
-        networkEnd.send(gameEntities.JSONforNetwork(screen=getRandomWorld(assets)))
+        networkMessage = gameEntities.JSONforNetwork(charX=charx, charY=chary)
+
+    log("(DUMMY NET MSG-TO-CURSES):" + networkMessage + "\n")
+    networkEnd.send(networkMessage)
+
 
