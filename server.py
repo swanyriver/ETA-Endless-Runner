@@ -1,9 +1,8 @@
 #!/usr/bin/python2.7
 import SocketServer
 
-#temporary
+# todo remove temp dummy server functions
 import dummyGameServer
-
 def inputToMove(msg, gameServer):
     if msg == "w":
         gameServer.moveUp()
@@ -30,6 +29,7 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         serverActive=True
         # self.request is the TCP socket connected to the client
 
+        # todo remove temp dummy server functions
         myDummyServer = dummyGameServer.DummyGameServer()
         self.request.sendall(myDummyServer.getGameUpdate() + "\n")
 
