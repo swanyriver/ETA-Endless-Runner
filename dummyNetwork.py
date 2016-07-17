@@ -5,25 +5,12 @@ import dummyGameServer
 import time
 import random
 
-cursesEnd, networkEnd = Pipe(duplex=True)
-cursesProcess = Process(target=cursesIO.cursesEngine, args=(cursesEnd,))
-cursesProcess.start()
-
-gameServer = dummyGameServer.DummyGameServer()
-
 
 def sendUpdateToCuresesFromServer():
     global gameUpdate
     gameUpdate = gameServer.getGameUpdate()
     log("(DUMMY NET MSG-TO-CURSES):" + gameUpdate + "\n")
     networkEnd.send(gameUpdate)
-
-
-#first game state
-sendUpdateToCuresesFromServer()
-
-JITTER_TIME = 2
-lastRefresh = 0
 
 
 def inputToMove(msg):
@@ -35,6 +22,18 @@ def inputToMove(msg):
         gameServer.moveDown()
     elif msg == "d":
         gameServer.moveRight()
+
+cursesEnd, networkEnd = Pipe(duplex=True)
+cursesProcess = Process(target=cursesIO.cursesEngine, args=(cursesEnd,))
+cursesProcess.start()
+
+gameServer = dummyGameServer.DummyGameServer()
+
+#first game state
+sendUpdateToCuresesFromServer()
+
+JITTER_TIME = 2
+lastRefresh = 0
 
 
 while cursesProcess.is_alive():

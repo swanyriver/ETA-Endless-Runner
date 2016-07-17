@@ -191,7 +191,9 @@ def cursesEngine(networkPipe):
     #todo determine if terminal is sufficient size for predifined 80 X 24 minus chat window
     maxY, maxX = myScreen.getmaxyx()
 
-    localGame = gameState(graphicAssets.getAllAssets(), maxY, maxX)
+    #-1 because cant draw on bottom right pixel
+    #todo reserve space for chat
+    localGame = gameState(graphicAssets.getAllAssets(), maxY-1, maxX)
 
     constantInputReadLoop(myScreen, networkPipe, localGame)
 
