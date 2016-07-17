@@ -21,7 +21,9 @@ class gameEntity():
         self.y = y
         self.x = x
 
+    ########################################
     #methods used by client/render side
+    ########################################
     def getYX(self):
         return self.y, self.x
 

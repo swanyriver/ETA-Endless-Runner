@@ -99,6 +99,9 @@ class GraphicAsset():
                 errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
                 raise ParseAssetError(errorString)
 
+    def __repr__(self):
+        return "height:"
+
 #will return a dictionary of name:assets
 def getAllAssets(debug = False):
 
