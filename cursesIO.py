@@ -3,7 +3,6 @@
 import curses
 import time
 from multiprocessing import Process, Pipe
-import testingServer
 from log import log
 import graphicAssets
 import gameEntities
