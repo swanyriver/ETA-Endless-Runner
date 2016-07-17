@@ -162,7 +162,7 @@ def constantInputReadLoop(screen, networkPipe, localGame):
         # check for message from network
         gameOver, message = checkForUpdate(networkPipe, localGame)
         if gameOver:
-            log("(CURSES GAMEOVER):%s\n"%message)
+            log("(CURSES GAMEOVER):%r\n"%message)
             break
 
         # redraw game state acording to frame rate
