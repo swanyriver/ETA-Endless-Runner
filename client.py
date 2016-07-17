@@ -2,6 +2,7 @@
 # references
 # https://wiki.python.org/moin/TcpCommunication 
 import sys
+import SocketServer
 import socket
 
 ##-- Functions --##
@@ -32,12 +33,20 @@ def main(argv):
 
     #while the user hasn't quit send and receive msgs
     while(MESSAGE != quit):
+
+        s.sendall(MESSAGE)
+        response = s.recv(1024)
+        print "Received: {}".format(response)
+
+        #TODO REMOVE
         #send message
-        s.send(MESSAGE.encode())
-        data = s.recv(BUFFER_SIZE).decode()
-        #TODO replace write with sending data to curses client
-        sys.stdout.write(data)
+        #s.send(MESSAGE.encode())
+        #data = s.recv(BUFFER_SIZE).decode()
+        #sys.stdout.write(data)
+
         #allow user to input text
+        #TODO replace write with sending data to curses client
+
         MESSAGE = getUserInput(userHandle)
 
     #send termination message s.send(MESSAGE.encode())
