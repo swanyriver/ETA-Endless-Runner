@@ -49,29 +49,3 @@ def JSONforNetwork(screen=None, charY=None, charX=None, gameOver=None):
     if gameOver:
         output[kGAMEOVER] = gameOver
     return json.dumps(output) + "\n"
-
-#for testing
-#if __name__ == '__main__':
-    #todo remove invalidated
-    # import random
-    # import cursesIO
-    # import log
-    #
-    # assets = graphicAssets.getAllAssets()
-    # entities = []
-    # for k in [random.choice(assets.keys()) for _ in range(6)]:
-    #     y,x = random.randint(0, 20 - assets[k].height - 1), random.randint(0, 80 - assets[k].width - 1)
-    #     entities.append(gameEntity(assets[k], y, x))
-    #
-    # log.log(str(entities) + '\n')
-    #
-    # cursesEntities = cursesIO.createScreenArray(str(entities), assets)
-    # cursesScreen = cursesIO.startCurses()
-    # cursesIO.renderEntities(cursesScreen,cursesEntities)
-    #
-    # while 1:
-    #     char_in = cursesScreen.getch()
-    #     if char_in == ord('q'): break
-    #
-    # cursesIO.exitCurses(cursesScreen)
-
