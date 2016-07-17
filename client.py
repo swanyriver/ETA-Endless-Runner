@@ -5,6 +5,8 @@ import sys
 import SocketServer
 import socket
 
+#TODO currently breaksif newline entered first
+
 ##-- Functions --##
 
 #user is either vertical or horizontal  
