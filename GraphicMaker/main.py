@@ -23,21 +23,22 @@ class MainHandler(webapp2.RequestHandler):
             self.response.write(outputFile.read())
             return
 
-    #create graphics JSON from form data
-    kDRAWING = "drawings"
-    kDEADLY = "deadly"
+    # create graphics JSON from form data
     def post(self):
-
-        #self.response.write(json.dumps(self.request.POST, indent=2))
-        #self.response.write(str(self.request.POST.getall('drawing')))
+        kDRAWING = "drawings"
+        kDEADLY = "deadly"
 
         outputDict = {}
-        if self.kDEADLY in self.request.POST:
-            outputDict["deadly"] = True
-        drawings = [d.splitlines() for d in self.request.POST.getall(self.kDRAWING) if d]
+        if kDEADLY in self.request.POST:
+            outputDict[kDEADLY] = True
+        drawings = [d.splitlines() for d in self.request.POST.getall(kDRAWING) if d]
 
+        #todo render json in html with option to return to editing including extra frames
+        #todo run parse tests on server and display error/success
+        #todo show game rendering of graphic  (is this even possible??)
+        #todo remove excess left padding,  add right padding
         if drawings:
-            outputDict[self.kDRAWING] = drawings
+            outputDict[kDRAWING] = drawings
             self.response.headers['Content-Type'] = "application/json"
             self.response.write(json.dumps(outputDict, indent=2))
         else:

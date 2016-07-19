@@ -6,11 +6,18 @@
 </head>
 <body>
 <h2>ETA project Graphics JSON Generator</h2>
-<form action="http://127.0.0.1:8080/" method="POST">
+<form id="graphicForm" method="POST">
     <br><input type="checkbox" name="deadly">deadly<br><br>
     <label>Drawing Frame</label><br>
-    <textarea rows="17" cols="80" name="drawings"></textarea> <br>
-    <textarea rows="17" cols="80" name="drawings"></textarea> <br>
+    <textarea id="drawingInput" rows="17" cols="80" name="drawings"></textarea> <br>
+    <input type="button" value="Add Animation Frame" onclick="
+    document.getElementById('graphicForm').insertBefore(
+        document.getElementById('drawingInput').cloneNode(), this
+    );
+    document.getElementById('graphicForm').insertBefore(
+        document.createElement('br'), this
+    );
+    "> <br> <br>
     <input type="submit" value="Submit">
 </form>
 </body>
