@@ -22,10 +22,12 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 print response
                 self.request.sendall(response)
 
-
-
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
+
+class dummyGameState():
+    
+
 
 if __name__ == "__main__":
     # Port 0 means to select an arbitrary unused port

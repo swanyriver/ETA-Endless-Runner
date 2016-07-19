@@ -6,8 +6,6 @@ import SocketServer
 import socket
 import threading
 
-#TODO currently breaksif newline entered first
-
 ##-- Functions --##
 
 #user is either vertical or horizontal  
@@ -30,32 +28,23 @@ def main(argv):
     s.connect((TCP_IP, TCP_PORT))
     s.setblocking(0)
 
-    userHandle="vertical"
-    #TODO determine if verticalClient or horizontalClient
+    userHandle="vertical"#TODO determine if which Client
 
     #get initial input
     MESSAGE = getUserInput(userHandle)
 
     #while the user hasn't quit send and receive msgs
     while(MESSAGE != quit):
-
-        s.sendall(MESSAGE)
-        #TODO try catch TODO TODO TODO
-        response = s.recv(1024)
-        print "Received: {}".format(response)
-
-        #TODO REMOVE
-        #send message
-        #s.send(MESSAGE.encode())
-        #data = s.recv(BUFFER_SIZE).decode()
-        #sys.stdout.write(data)
-
-        #allow user to input text
-        #TODO replace write with sending data to curses client
-
+        response=""
+        try:
+            s.sendall(MESSAGE)
+            response = s.recv(1024)
+            print "Received: {}".format(response)
+        except:
+            if response != "":
+                pass
         MESSAGE = getUserInput(userHandle)
 
-    #send termination message s.send(MESSAGE.encode())
     print("closing connection")
     #close connection
     s.close()
