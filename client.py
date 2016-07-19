@@ -35,7 +35,7 @@ def main(argv):
     #TODO determine if verticalClient or horizontalClient
 
     ############################################################
-    ####  Start curses process #################################
+    #                Start curses process 
     ############################################################
     cursesEnd, networkEnd = Pipe(duplex=True)
     cursesProcess = Process(target=cursesIO.cursesEngine, args=(cursesEnd,))
@@ -63,7 +63,7 @@ def main(argv):
             pass
 
     ############################################################
-    #### curses process has ended ##############################
+    #         curses process has ended                         #
     ############################################################
 
     #send termination message s.send(MESSAGE.encode())
