@@ -13,6 +13,9 @@ One player will control the vertical axis and the other player will control the 
 (for testing purposes we will only have one client connecting who will control both horizontal and vertical movement)
 The player must navigate around obstacles and move to the exit of the screen to progress through the levels.
 
+Controls:
+players direct movement using wasd or arrow keys to move,  q or esc key to quit.
+
 Networking:
 Accepts: strings of user input and passes them to the server as either strings (for messages) or constants (for directions)
 Returns: JSON formated files containing information about player location and graphics.
