@@ -23,7 +23,7 @@ def main(argv):
     TCP_IP = sys.argv[1] 
     TCP_PORT = int(sys.argv[2])  
     BUFFER_SIZE = 1024
-    quit="\quit"
+    quit="q"
 
     #--connect to server--#
     #create sock stream and connect  
