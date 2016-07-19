@@ -1,5 +1,5 @@
 ETA endless runner
-Members: Megan Miranda Brandon
+Members: Megan Fanning, Miranda Weldon, Brandon Swanson
 =======
 
 To run program: 
@@ -11,6 +11,7 @@ once the server and the client connect the game will begin (a curses screen will
 Game play mechanics:
 One player will control the vertical axis and the other player will control the horizontal axis of movement.
 (for testing purposes we will only have one client connecting who will control both horizontal and vertical movement)
+The player must navigate around obstacles and move to the exit of the screen to progress through the levels.
 
 Networking:
 Accepts: strings of user input and passes them to the server as either strings (for messages) or constants (for directions)
