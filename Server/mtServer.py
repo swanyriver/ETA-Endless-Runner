@@ -5,7 +5,6 @@ from SocketServer import ThreadingTCPServer
 from SocketServer import BaseRequestHandler
 
 class ThreadedTCPRequestHandler(BaseRequestHandler):
-
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client

@@ -4,6 +4,7 @@
 import sys
 import SocketServer
 import socket
+import threading
 
 #TODO currently breaksif newline entered first
 
@@ -20,12 +21,14 @@ def main(argv):
     TCP_IP = sys.argv[1] 
     TCP_PORT = int(sys.argv[2])  
     BUFFER_SIZE = 1024
-    quit="\quit"
+    quit="quit"
 
     #--connect to server--#
     #create sock stream and connect  
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((TCP_IP, TCP_PORT))
+    s.setblocking(0)
 
     userHandle="vertical"
     #TODO determine if verticalClient or horizontalClient
@@ -37,6 +40,7 @@ def main(argv):
     while(MESSAGE != quit):
 
         s.sendall(MESSAGE)
+        #TODO try catch TODO TODO TODO
         response = s.recv(1024)
         print "Received: {}".format(response)
 

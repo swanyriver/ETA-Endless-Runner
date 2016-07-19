@@ -3,22 +3,23 @@ import threading
 import SocketServer
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
-#    def handle(self):
-#        data = self.request.recv(1024)
-#        cur_thread = threading.current_thread()
-#        response = "{}: {}".format(cur_thread.name, data)
-#        self.request.sendall(response)
-
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client
+        self.request.setblocking(0)
         while serverActive:
-            received=self.request.recv(1024) #don't think recv works here
+            received=""
+            try:
+                received=self.request.recv(1024) #don't think recv works here
+            except:
+                pass
+            
             if received==0:
                 serverActive=False
-            else:
+            elif received !="":
                 cur_thread = threading.current_thread()
                 response = "{}: {}".format(cur_thread.name, received)
+                print response
                 self.request.sendall(response)
 
 
