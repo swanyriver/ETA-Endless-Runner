@@ -25,9 +25,6 @@ class Player():
         self.x = -1
         self.y = -1
 
-#	def get_location(self):
-#		return y, x
-
     #functions for single-space movement
     def _move_up(self):
         self.y = self.y - 1
@@ -51,18 +48,6 @@ class Player():
         self.x = -1
         self.y = -1
 
-    #sends a json message to _________
-    #IS THIS RIGHT??
-    # def update(self):
-    #     data = {'name': self.name, 'x': self.x, 'y': self.y}
-    #     json.dumps(data)
-    #     return
-
-    #recieves a json message from ______
-    def get_change_request(self, m):
-        req = json.loads(m)
-        #do something here..
-        return
 
 #obstacle class: initializes location to outside the grid
 class Obstacle():
@@ -72,9 +57,6 @@ class Obstacle():
         self.name = name
         self.x = -1
         self.y = -1
-
-#	def get_location(self):
-#		return y, x
 
     #functions to set initial obstacle location in room
     def set_x(self, new_x):
