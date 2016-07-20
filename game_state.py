@@ -132,7 +132,6 @@ class Grid():
 #and grid. I don't believe the Gamestate class itself stores instances
 #of any other class
 class Gamestate():
-    t0, t1, gameTime, roomsCrossed, gameOver = 0
 
     #sets up initial variables and grid
     def __init__(self):
@@ -141,6 +140,8 @@ class Gamestate():
         self.score = 0
         self.gameTime = 0
         self.player = Player()
+        self.t0 = 0
+        self.t1 = 0
         self.gaLibrary = graphicAssets.getAllAssets()
 
 
