@@ -7,7 +7,7 @@ import random
 #######todo remove ######################################################
 #Note:  for demo purposes only
 def getRandomWorld(gaLibrary):
-    NUM_GEN = 4
+    NUM_GEN = random.randint(3, 5)
     entities = []
     availables = filter(lambda k: k != "character", gaLibrary.keys())
     for k in [random.choice(availables) for _ in range(NUM_GEN)]:
@@ -135,6 +135,10 @@ class Gamestate():
         #add obstacles initially?
         self.entities = getRandomWorld(self.gaLibrary)
 
+        #NOTE: for demo
+        self.SCREEN_REFRESH_INTERVAL = 15
+        self.countDownToNewScreen = self.SCREEN_REFRESH_INTERVAL
+
         #adds player to middle of grid
         self.player.set_x(self.grid.width/2)
         self.player.set_y(self.grid.height/2)
@@ -166,8 +170,19 @@ class Gamestate():
 
 
         # todo determine if character has entered new screen and update game layout
+        # NOTE: for demo entering a new scree is simulated with a move countdown
+        self.countDownToNewScreen -= 1
+        print "COUNTDOWN:", self.countDownToNewScreen
+        if self.countDownToNewScreen <= 0:
+            # NOTE: for demo generating a new room is simulated by random generation process
+            self.countDownToNewScreen = self.SCREEN_REFRESH_INTERVAL
+            self.entities = getRandomWorld(self.gaLibrary)
 
-        # todo send screen update msg if entered new room
+            # todo generate new room and player position
 
-        return gameEntities.JSONforNetwork(charX=self.player.x, charY=self.player.y)
+            # transmit updated room and player position message
+            return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
 
+        else:
+            # transmit only updated player position
+            return gameEntities.JSONforNetwork(charX=self.player.x, charY=self.player.y)
