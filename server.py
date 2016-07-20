@@ -1,18 +1,6 @@
 #!/usr/bin/python2.7
 import SocketServer
-
-# todo remove temp dummy server functions
-import dummyGameServer
-def inputToMove(msg, gameServer):
-    if msg == "w":
-        gameServer.moveUp()
-    elif msg == "a":
-        gameServer.moveLeft()
-    elif msg == "s":
-        gameServer.moveDown()
-    elif msg == "d":
-        gameServer.moveRight()
-
+import game_state
 
 #Server
 #references : https://docs.python.org/2/library/socketserver.html
@@ -30,25 +18,24 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         # self.request is the TCP socket connected to the client
 
         # todo remove temp dummy server functions
-        myDummyServer = dummyGameServer.DummyGameServer()
-        self.request.sendall(myDummyServer.getGameUpdate() + "\n")
+        game = game_state.Gamestate()
+        self.request.sendall(game.get_update()+ "\n")
 
         while serverActive:
             received=self.request.recv(1024)
             if received==0:
                 serverActive=False
             else:
-                self.data = received.strip()
+                data = received.strip()
                 print "{} wrote:".format(self.client_address[0])
-                print self.data
-                # just send back the same data, but upper-cased
+                print data
 
-                #todo remove temp dummy server functions
-                inputToMove(self.data, myDummyServer)
-                self.request.sendall(myDummyServer.getGameUpdate() + "\n")
+                #todo intercept and forward chat message instead of send to game
 
-                #TODO call function to process user movement
-                #TODO call function to pass user text back to other client
+                #request to move player
+                updatedState = game.get_change_request(data)
+
+                self.request.sendall(updatedState + "\n")
 
 
 if __name__ == "__main__":
