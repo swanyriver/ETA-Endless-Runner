@@ -31,7 +31,7 @@ def main(argv):
     s.connect((TCP_IP, TCP_PORT))
     s.settimeout(.2)
 
-    userHandle="vertical"
+    userHandle="player1"
     #TODO determine if verticalClient or horizontalClient
 
     ############################################################
