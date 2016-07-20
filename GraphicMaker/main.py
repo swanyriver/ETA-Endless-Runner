@@ -32,8 +32,6 @@ class MainHandler(webapp2.RequestHandler):
         # then add back right padding up to the longest(s)(non-whitespace-to-not-whitespace) strings in the drawing
         # remove unnecessary left padding (at least one string will have a non whitespace char in index 0)
 
-        print "entering drawing method:", drawing
-
         drawing = [line.rstrip() for line in drawing]
 
         while drawing and not drawing[0]:
