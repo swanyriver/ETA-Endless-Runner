@@ -59,8 +59,7 @@ class MainHandler(webapp2.RequestHandler):
         kDEADLY = "deadly"
 
         outputDict = {}
-        if kDEADLY in self.request.POST:
-            outputDict[kDEADLY] = True
+        outputDict[kDEADLY] = (kDEADLY in self.request.POST)
 
         #uniform pad nonEmpty frames
         drawings = [MainHandler.uniformDrawing(d.splitlines()) for d in self.request.POST.getall(kDRAWING) if d]
