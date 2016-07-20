@@ -20,8 +20,8 @@ def getRandomWorld(gaLibrary):
 class Player():
     #takes up one space, which shouldn't automatically be -1, -1;
     #invalid location until set for gameplay
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
+        #self.name = name
         self.x = -1
         self.y = -1
 
@@ -53,10 +53,10 @@ class Player():
 
     #sends a json message to _________
     #IS THIS RIGHT??
-    def update(self):
-        data = {'name': self.name, 'x': self.x, 'y': self.y}
-        json.dumps(data)
-        return
+    # def update(self):
+    #     data = {'name': self.name, 'x': self.x, 'y': self.y}
+    #     json.dumps(data)
+    #     return
 
     #recieves a json message from ______
     def get_change_request(self, m):
