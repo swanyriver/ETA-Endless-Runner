@@ -27,14 +27,13 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
                 serverActive=False
             else:
                 data = received.strip()
-                print "{} wrote:".format(self.client_address[0])
-                print data
+                print "recieved from " + str(self.client_address[0]) + ": " + data
 
                 #todo intercept and forward chat message instead of send to game
 
                 #request to move player
                 updatedState = game.get_change_request(data)
-
+                print "sent to client: " + updatedState
                 self.request.sendall(updatedState + "\n")
 
 
