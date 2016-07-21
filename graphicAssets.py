@@ -81,12 +81,17 @@ class GraphicAsset():
             if not isinstance(d, list):
                 raise ParseAssetError("drawings must contain arrays of strings")
             if len(d) != self.height:
-                raise ParseAssetError("drawings must be the same height")
+                errorString = "drawings must be the same height, heights:" + str([len(d) for d in self.drawings]) + '\n'
+                raise ParseAssetError(errorString)
             for s in d:
                 if not (isinstance(s, str) or isinstance(s, unicode)):
                     raise ParseAssetError("drawings must contain arrays of strings")
                 if len(s) != self.width:
-                    raise ParseAssetError("each line of drawing must be the same width")
+                    errorString = "each line of drawing must be the same width, first line width:%d\n"%self.width \
+                                  + '\n'.join(d) \
+                                  + str([len(line) for line in d])
+                    raise ParseAssetError(errorString)
+
 
         #detect hitbox on first drawing
         self.hitbox = getHitbox(self.height, self.width, self.drawings[0])
