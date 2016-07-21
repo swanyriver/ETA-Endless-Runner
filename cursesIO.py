@@ -36,6 +36,35 @@ control_scheme = {
     ord('q'):ACTIONS.quit
 }
 
+
+# gamEntity subclass for encapsulating the drawing related methods
+class DrawableEntity(gameEntities.gameEntity):
+    def __init__(self, graphicAsset, y, x):
+        super(DrawableEntity, self).__init__(graphicAsset, y, x)
+
+        if not len(graphicAsset.drawings) > 1:
+            self.getDrawing = self.getDrawingNoAnim
+        else:
+            self.lastDrawingFrame = 0
+
+
+    #todo add color
+    #todo choose drawing index by animation sequence
+    def getDrawingFrame(self, frame):
+        return [gameEntities.Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[frame][y][x]))
+                for y in range(self.graphic.height)
+                for x in range(self.graphic.width)
+                if self.graphic.drawings[0][y][x] != " "]
+
+    def getDrawingNoAnim(self):
+        return self.getDrawingFrame(0)
+
+    def getDrawing(self):
+        #todo animated drawing
+        return self.getDrawingNoAnim()
+
+
+
 class gameState():
     def __init__(self, assets, maxY, maxX):
         self.maxX = maxX
@@ -43,14 +72,14 @@ class gameState():
         self.entities = []
         self.assets = assets
         #todo this is very fragile, consider another way of selecting character drawing
-        self.character = gameEntities.gameEntity(assets["character"], None, None)
+        self.character = DrawableEntity(assets["character"], None, None)
 
     def newScreen(self, newEntities):
         self.entities = []
         for e in newEntities:
             e['graphicAsset'] = self.assets[e['graphicAsset']]
-            self.entities.append(gameEntities.gameEntity(**e))
-        #character position is invalidated on new screen #todo ensure char pos is always transmitted after new screen
+            self.entities.append(DrawableEntity(**e))
+        #character position is invalidated on new screen
         self.character.setYX(None, None)
         log("(CURSES-GAME): new screens entities: (%d) "%len(self.entities)
             + str(self.entities) + "\n")

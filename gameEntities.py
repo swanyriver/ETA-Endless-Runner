@@ -2,19 +2,21 @@ from collections import namedtuple
 import graphicAssets
 import json
 from networkKeys import *
+import time
 
 #todo add color
 Pixel = namedtuple("pixel", ['y', 'x', 'char'])
 
 class gameEntity(object):
     def __init__(self, graphicAsset, y, x):
+        """
+        :type graphicAsset: graphicAssets.GraphicAsset
+        :type y: int
+        :type x: int
+        """
         self.graphic = graphicAsset
         self.y = y
         self.x = x
-
-    ########################################
-    #methods to be used by server game side
-    #########################################
 
     def setYX(self, y, x):
         self.y = y
@@ -22,6 +24,7 @@ class gameEntity(object):
 
     def getLeftBound(self):
         return self.x
+
     def getRightBound(self):
         return self.x + self.getWidth() - 1
 
@@ -37,19 +40,8 @@ class gameEntity(object):
     def isDeadly(self):
         return self.graphic.deadly
 
-    ########################################
-    #methods used by client/render side
-    ########################################
     def getYX(self):
         return self.y, self.x
-
-    #todo add color
-    #todo choose drawing index by animation sequence
-    def getDrawing(self):
-        return [Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[0][y][x]))
-                for y in range(self.graphic.height)
-                for x in range(self.graphic.width)
-                if self.graphic.drawings[0][y][x] != " "]
 
     def getHeight(self):
         return self.graphic.height
@@ -57,6 +49,7 @@ class gameEntity(object):
     def getWidth(self):
         return self.graphic.width
 
+    #todo (performance) cache delta hitbox, use this method as wrapper to check cache
     def getDeltaHitbox(self):
         return [(y + self.y, x + self.x) for y, x in self.graphic.hitbox]
 
@@ -89,8 +82,8 @@ def checkCollision(entities, player):
     :return : tuple (COLLIDED | DEAD | None,  <gameEntity> collided with | None)
     """
 
-    #todo create hitbox proccessing class to store calced hitboxes and compare
-    #todo only re-calc hitbox map when entitys have changed, and compare entity list before regen hitbox map
+    # todo (performance) create hitbox proccessing class to store calced hitboxes and compare
+    # todo (performance) only re-calc hitbox map when entitys have changed, and compare entity list before regen map
 
     # y,x points are added to a dictionary as keys, with values being entity that is occupying that pixel
     #   added in order as order defines draw & collision order with last item in array being drawn on-top and first to
