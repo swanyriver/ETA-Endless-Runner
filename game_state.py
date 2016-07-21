@@ -2,30 +2,26 @@ import time
 import json
 import gameEntities
 import graphicAssets
-import random
+import gameFunctions
 
-#######todo remove ######################################################
-#Note:  for demo purposes only
-def getRandomWorld(gaLibrary):
-    NUM_GEN = 4
-    entities = []
-    availables = filter(lambda k: k != "character", gaLibrary.keys())
-    for k in [random.choice(availables) for _ in range(NUM_GEN)]:
-        y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
-        entities.append(gameEntities.gameEntity(gaLibrary[k], y, x))
-    return entities
-##########################################################################
 
 #player class: initializes location to outside the grid
-class Player():
+#player class is now a subclass of gameEntitiy and iherits the folowing properties/methods
+#  x
+#  y
+#  graphic (reference to graphic asset instance)
+#
+class Player(gameEntities.gameEntity):
     #takes up one space, which shouldn't automatically be -1, -1;
     #invalid location until set for gameplay
-    def __init__(self):
-        #self.name = name
-        self.x = -1
-        self.y = -1
+    def __init__(self, graphicAsset):
+        super(Player, self).__init__(graphicAsset, -1, -1)
+
+
 
     #functions for single-space movement
+    # NOTE: if these functions are ever modified to do more than set y or x
+    #       then Game get_change_request() will need to be updated
     def _move_up(self):
         self.y = self.y - 1
     def _move_down(self):
@@ -48,11 +44,6 @@ class Player():
         self.x = -1
         self.y = -1
 
-    #recieves a json message from ______
-    def get_change_request(self, m):
-        req = json.loads(m)
-        #do something here..
-        return
 
 #obstacle class: initializes location to outside the grid
 class Obstacle():
@@ -126,14 +117,15 @@ class Gamestate():
         self.roomsCrossed = 0
         self.score = 0
         self.gameTime = 0
-        self.player = Player()
         self.t0 = 0
         self.t1 = 0
         self.gaLibrary = graphicAssets.getAllAssets()
 
+        #todo hardcode key for player representation and change asset name to 'player' to avoid confusion
+        self.player = Player(self.gaLibrary['character'])
 
         #add obstacles initially?
-        self.entities = getRandomWorld(self.gaLibrary)
+        self.entities = gameFunctions.getNewGameRoom(self)
 
         #adds player to middle of grid
         self.player.set_x(self.grid.width/2)
@@ -147,14 +139,18 @@ class Gamestate():
         self.t1 = time.time()
         self.gameTime = (self.t1 - self.t0)
 
-    #keep track of rooms crossed
 
+    # called once at begining of game to create first game rendering
+    # thenceforth called by game state after each player move and result returned to Network out
     def get_update(self):
         return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
 
     #recieves a character from client
     def get_change_request(self, msg):
-        # todo colision, death, boundry detection  Here or in the move functions
+        # todo ### Brandon will attach hitbox detection here
+
+        cachedPlayerPos = self.player.getYX()
+
         if msg == "w":
             self.player._move_up()
         elif msg == "a":
@@ -164,10 +160,26 @@ class Gamestate():
         elif msg == "d":
             self.player._move_right()
 
+        playerCollision, collidedEntity = gameEntities.checkCollision(self.entities, self.player)
+        if playerCollision == gameEntities.COLLIDED:
+            self.player.setYX(*cachedPlayerPos)
+            print "(GAME-STATE): player has colided at pos:", self.player.getYX(), "with", collidedEntity
+            #todo don't send network message? return None and have network check before transmit
+        elif playerCollision == gameEntities.DEAD:
+            print "(GAME-STATE): player has died at pos:", self.player.getYX(), collidedEntity
+            return gameEntities.JSONforNetwork(
+                charX=self.player.x,
+                charY=self.player.y,
+                gameOver=gameFunctions.getGameOverDictionary(self))
 
-        # todo determine if character has entered new screen and update game layout
 
-        # todo send screen update msg if entered new room
+        # else: player has not collided, transmit updated position
 
-        return gameEntities.JSONforNetwork(charX=self.player.x, charY=self.player.y)
+        playerPosOnNewScreen = gameFunctions.playerLeftScreen(self)
+        if playerPosOnNewScreen:
+            self.entities = gameFunctions.getNewGameRoom(self)
+            return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
+
+        else:
+            return gameEntities.JSONforNetwork(charX=self.player.x, charY=self.player.y)
 

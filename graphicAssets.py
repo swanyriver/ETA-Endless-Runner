@@ -100,8 +100,7 @@ class GraphicAsset():
                 errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
                 raise ParseAssetError(errorString)
 
-    def __repr__(self):
-        return "height:"
+
 
 #returns one graphic asset instance, primarily for debugging, game should use factory method getAllAssets()
 def CreateFromJSON(jsonString, name=None):

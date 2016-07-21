@@ -6,7 +6,7 @@ from networkKeys import *
 #todo add color
 Pixel = namedtuple("pixel", ['y', 'x', 'char'])
 
-class gameEntity():
+class gameEntity(object):
     def __init__(self, graphicAsset, y, x):
         self.graphic = graphicAsset
         self.y = y
@@ -19,6 +19,23 @@ class gameEntity():
     def setYX(self, y, x):
         self.y = y
         self.x = x
+
+    def getLeftBound(self):
+        return self.x
+    def getRightBound(self):
+        return self.x + self.getWidth() - 1
+
+    def getTopBound(self):
+        return self.y
+
+    def getBottomBound(self):
+        return self.y + self.getHeight() - 1
+
+    def getBoundingRect(self):
+        return self.getTopBound(), self.getLeftBound(), self.getBottomBound(), self.getRightBound()
+
+    def isDeadly(self):
+        return self.graphic.deadly
 
     ########################################
     #methods used by client/render side
@@ -34,6 +51,19 @@ class gameEntity():
                 for x in range(self.graphic.width)
                 if self.graphic.drawings[0][y][x] != " "]
 
+    def getHeight(self):
+        return self.graphic.height
+
+    def getWidth(self):
+        return self.graphic.width
+
+    def getDeltaHitbox(self):
+        return [[(y + self.y, self.x) for y, x in self.graphic.hitbox]]
+
+    def __repr__(self):
+        return "%s at YX:%d,%d" % (self.graphic.name, self.y, self.x)
+
+
 
 #screen should be array of gameEntity instances
 #char Y and X are ints
@@ -47,3 +77,12 @@ def JSONforNetwork(screen=None, charY=None, charX=None, gameOver=None):
     if gameOver:
         output[kGAMEOVER] = gameOver
     return json.dumps(output) + "\n"
+
+# entities = array of gameEntity instances, player is instance of game_state.Player
+COLLIDED = 1
+DEAD = -1
+
+#todo brandon, implemnent hitbox checking
+# todo colision, death, boundry detection  Here or in the move functions
+def checkCollision(entities, player):
+    return COLLIDED, None
