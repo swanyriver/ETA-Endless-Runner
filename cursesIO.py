@@ -61,8 +61,17 @@ class gameState():
         log("(CURSES-GAME): char new pos %s\n"%(str(self.character.getYX())))
 
     def drawEntity(self, entity, screen):
+
+        #todo remove temp  #drawing hitbox
+        for y, x in entity.getDeltaHitbox():
+            if 0 <= y < self.maxY and 0 <= x < self.maxX:
+                screen.addch(y, x, " ", curses.color_pair(2 if entity.isDeadly() else 3) )
+
         for pixel in filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX,
                             entity.getDrawing()):
+            #todo remove temp
+            pixel = pixel + (curses.color_pair(2 if entity.isDeadly() else 3), )
+            #############
             screen.addch(*pixel)
 
     def render(self, screen):
@@ -82,8 +91,10 @@ def startCurses():
     screen.nodelay(ON)
     curses.curs_set(OFF)
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_YELLOW)
+    # todo remove temp
+    curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_RED)
+    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLUE)
+    ########################
     return screen
 
 

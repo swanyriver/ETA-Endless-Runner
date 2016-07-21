@@ -58,10 +58,10 @@ class gameEntity(object):
         return self.graphic.width
 
     def getDeltaHitbox(self):
-        return [(y + self.y, self.x) for y, x in self.graphic.hitbox]
+        return [(y + self.y, x + self.x) for y, x in self.graphic.hitbox]
 
     def __repr__(self):
-        return "%s at YX:%d,%d" % (self.graphic.name, self.y, self.x)
+        return "%s at YX:%d,%d %s" % (self.graphic.name, self.y, self.x, ("<DEADLY>" if self.isDeadly() else ""))
 
 
 
@@ -95,17 +95,43 @@ def checkCollision(entities, player):
     #todo create hitbox proccessing class to store calced hitboxes and compare
     #todo only re-calc hitbox map when entitys have changed, and compare entity list before regen hitbox map
 
-    # y,x points are added to a dictionary as keys, with values being True,False for deadly or not
+    # y,x points are added to a dictionary as keys, with values being entity that is occupying that pixel
     #   added in order as order defines draw & collision order with last item in array being drawn on-top and first to
     #   collide with player,  a dangerous object with a save object drawn entirely over it (safe object has higher
     #   index in array) will be entirely invisible and safe for the player to collide with.
     collionsMap = {}
     for e in entities:
         collionsMap.update(
-            {point: e.isDeadly() for point in e.getDeltaHitbox()}
+            {point: e for point in e.getDeltaHitbox()}
         )
 
-    print entities
-    print collionsMap
+    collidedWith = list(set(collionsMap.get(point) for point in player.getDeltaHitbox() if point in collionsMap))
 
-    return None, None
+    #todo remove this, dont boadcast non colisions
+    print "collision map:",  collionsMap
+    print "cmap points:", collionsMap.keys()
+    print "cmap values", set(collionsMap.values())
+    print "player delta hitbox", player.getDeltaHitbox()
+    print "(GAME-STATE COLLISION): player collided with: ", collidedWith, type(collidedWith[0]) if collidedWith else ""
+    if collidedWith: print "IsDeadlyArray:", [e.isDeadly() for e in collidedWith], any(e.isDeadly() for e in collidedWith)
+
+
+    # players new position does not touch any deadly or non-deadly entities
+    if not collidedWith:
+        return None, None
+
+    # player has colided with something deadly
+    if any(e.isDeadly() for e in collidedWith):
+        whoKilledPlayer = filter(lambda c: c.isDeadly(), collidedWith)
+        otherCollisions = filter(lambda c: not c.isDeadly(), collidedWith)
+        #todo branch test this print statement
+        print "(GAME-STATE COLLISION): player was killed by the entitie(s): ", whoKilledPlayer, \
+            ((",   player also collided with: " + str(otherCollisions)) if otherCollisions else "")
+
+        #todo is this the best way of choosing the killer,  should we report all that had a hand in players demise
+        return DEAD, whoKilledPlayer[0]
+
+    # player has collided with something not deadly
+    else:
+        print "(GAME-STATE COLLISION): player collided with", collidedWith
+        return COLLIDED, collidedWith[0]
