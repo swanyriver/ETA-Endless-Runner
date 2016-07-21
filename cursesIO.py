@@ -41,6 +41,7 @@ control_scheme = {
 class TimingClock():
     def __init__(self):
         self.tick = TICK
+    # todo (performance / quality) add method for advancing frames uniformly on each screen refresh, VERY LOW P
 
 # gamEntity subclass for encapsulating the drawing related methods
 class DrawableEntity(gameEntities.gameEntity):
