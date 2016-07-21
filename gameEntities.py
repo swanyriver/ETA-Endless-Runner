@@ -58,7 +58,7 @@ class gameEntity(object):
         return self.graphic.width
 
     def getDeltaHitbox(self):
-        return [[(y + self.y, self.x) for y, x in self.graphic.hitbox]]
+        return [(y + self.y, self.x) for y, x in self.graphic.hitbox]
 
     def __repr__(self):
         return "%s at YX:%d,%d" % (self.graphic.name, self.y, self.x)
@@ -85,4 +85,27 @@ DEAD = -1
 #todo brandon, implemnent hitbox checking
 # todo colision, death, boundry detection  Here or in the move functions
 def checkCollision(entities, player):
+    """
+    :type entities: [gameEntity]
+    :type player: gameEntity
+    :return : tuple (COLLIDED | DEAD | None,  <gameEntity> collided with | None)
+    """
+    #print "(GAME-STATE COLLISION):", entities, player
+
+    #todo create hitbox proccessing class to store calced hitboxes and compare
+    #todo only re-calc hitbox map when entitys have changed, and compare entity list before regen hitbox map
+
+    # y,x points are added to a dictionary as keys, with values being True,False for deadly or not
+    #   added in order as order defines draw & collision order with last item in array being drawn on-top and first to
+    #   collide with player,  a dangerous object with a save object drawn entirely over it (safe object has higher
+    #   index in array) will be entirely invisible and safe for the player to collide with.
+    collionsMap = {}
+    for e in entities:
+        collionsMap.update(
+            {point: e.isDeadly() for point in e.getDeltaHitbox()}
+        )
+
+    print entities
+    print collionsMap
+
     return None, None
