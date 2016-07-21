@@ -82,15 +82,12 @@ def JSONforNetwork(screen=None, charY=None, charX=None, gameOver=None):
 COLLIDED = 1
 DEAD = -1
 
-#todo brandon, implemnent hitbox checking
-# todo colision, death, boundry detection  Here or in the move functions
 def checkCollision(entities, player):
     """
     :type entities: [gameEntity]
     :type player: gameEntity
     :return : tuple (COLLIDED | DEAD | None,  <gameEntity> collided with | None)
     """
-    #print "(GAME-STATE COLLISION):", entities, player
 
     #todo create hitbox proccessing class to store calced hitboxes and compare
     #todo only re-calc hitbox map when entitys have changed, and compare entity list before regen hitbox map
@@ -105,16 +102,8 @@ def checkCollision(entities, player):
             {point: e for point in e.getDeltaHitbox()}
         )
 
+    # create a set of distinct game entities that the players hitbox is overlapping presently
     collidedWith = list(set(collionsMap.get(point) for point in player.getDeltaHitbox() if point in collionsMap))
-
-    #todo remove this, dont boadcast non colisions
-    print "collision map:",  collionsMap
-    print "cmap points:", collionsMap.keys()
-    print "cmap values", set(collionsMap.values())
-    print "player delta hitbox", player.getDeltaHitbox()
-    print "(GAME-STATE COLLISION): player collided with: ", collidedWith, type(collidedWith[0]) if collidedWith else ""
-    if collidedWith: print "IsDeadlyArray:", [e.isDeadly() for e in collidedWith], any(e.isDeadly() for e in collidedWith)
-
 
     # players new position does not touch any deadly or non-deadly entities
     if not collidedWith:
@@ -124,7 +113,6 @@ def checkCollision(entities, player):
     if any(e.isDeadly() for e in collidedWith):
         whoKilledPlayer = filter(lambda c: c.isDeadly(), collidedWith)
         otherCollisions = filter(lambda c: not c.isDeadly(), collidedWith)
-        #todo branch test this print statement
         print "(GAME-STATE COLLISION): player was killed by the entitie(s): ", whoKilledPlayer, \
             ((",   player also collided with: " + str(otherCollisions)) if otherCollisions else "")
 
