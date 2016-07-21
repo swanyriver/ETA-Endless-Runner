@@ -13,6 +13,7 @@ ON = 1
 OFF = 0
 
 SCREEN_REFRESH = .05 # 20FPS
+TICK = .5            # starting frequency of frame transitions for animation,  half second
 
 # sadly there is no Enum class or pattern in python 2.x so this class will need to be used with extreme caution
 class ACTIONS():
@@ -36,16 +37,34 @@ control_scheme = {
     ord('q'):ACTIONS.quit
 }
 
+#simple wrapper around int to keep all animations on same speed
+class TimingClock():
+    def __init__(self):
+        self.tick = TICK
 
 # gamEntity subclass for encapsulating the drawing related methods
 class DrawableEntity(gameEntities.gameEntity):
-    def __init__(self, graphicAsset, y, x):
+    def __init__(self, graphicAsset, y, x, timingClock):
         super(DrawableEntity, self).__init__(graphicAsset, y, x)
 
         if not len(graphicAsset.drawings) > 1:
             self.getDrawing = self.getDrawingNoAnim
         else:
-            self.lastDrawingFrame = 0
+            self.currentFrame = 0
+            self.lastFrameTime = time.time()
+
+        self.timingClock = timingClock
+
+        #todo add these attributes to graphicAsset
+        #todo add these assets to Graphics maker applet
+        #todo add these assets to GraphicsAssets jsonPaser
+        self.frameDurations = [1] * len(self.graphic.drawings)
+        self.totalDuration = sum(self.frameDurations) * self.timingClock.tick
+
+        # DEBUG log for instantiating animated drawings
+        # log("DRAW INSTANCE:" + str(graphicAsset.name) + "\n" + "num frames:%d"%len(self.graphic.drawings) +
+        #     "\ntimings:%s\n"%str(self.frameDurations) +
+        #     "drawings: " + "\n".join("\n".join(d) for d in self.graphic.drawings))
 
 
     #todo add color
@@ -54,15 +73,27 @@ class DrawableEntity(gameEntities.gameEntity):
         return [gameEntities.Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[frame][y][x]))
                 for y in range(self.graphic.height)
                 for x in range(self.graphic.width)
-                if self.graphic.drawings[0][y][x] != " "]
+                if self.graphic.drawings[frame][y][x] != " "]
 
     def getDrawingNoAnim(self):
         return self.getDrawingFrame(0)
 
     def getDrawing(self):
-        #todo animated drawing
-        return self.getDrawingNoAnim()
 
+        timeSinceFrameChange = (time.time() - self.lastFrameTime)
+
+        # advance current frame to appropriate frame
+        #  if TICK < SCREEN_REFRESH (currently 1/10) or program has hung frames might be skipped (intended effect)
+        while timeSinceFrameChange >= self.frameDurations[self.currentFrame] * self.timingClock.tick:
+            timeSinceFrameChange -= self.frameDurations[self.currentFrame] * self.timingClock.tick
+            self.currentFrame = (self.currentFrame + 1) % len(self.graphic.drawings)
+            self.lastFrameTime = time.time()
+
+            # debug log for animation transition
+            # log(str(self) + "Advanced frame to frame %d/%d\n"%(self.currentFrame, len(self.graphic.drawings)) +
+            #     "\n".join(self.graphic.drawings[self.currentFrame]) + "\n")
+
+        return self.getDrawingFrame(self.currentFrame)
 
 
 class gameState():
@@ -71,14 +102,19 @@ class gameState():
         self.maxY = maxY
         self.entities = []
         self.assets = assets
+        self.timingClock = TimingClock()
         #todo this is very fragile, consider another way of selecting character drawing
-        self.character = DrawableEntity(assets["character"], None, None)
+        self.character = DrawableEntity(assets["character"], None, None, self.timingClock)
 
     def newScreen(self, newEntities):
         self.entities = []
         for e in newEntities:
-            e['graphicAsset'] = self.assets[e['graphicAsset']]
-            self.entities.append(DrawableEntity(**e))
+            self.entities.append(DrawableEntity(
+                y=e['y'],
+                x=e['x'],
+                graphicAsset=self.assets[e['graphicAsset']],
+                timingClock=self.timingClock
+            ))
         #character position is invalidated on new screen
         self.character.setYX(None, None)
         log("(CURSES-GAME): new screens entities: (%d) "%len(self.entities)
@@ -93,6 +129,7 @@ class gameState():
                             entity.getDrawing()):
             screen.addch(*pixel)
 
+    # todo (performance) only redraw invalid pixels (where the player is most times)
     def render(self, screen):
         screen.erase()
         for e in self.entities:
@@ -205,6 +242,14 @@ def constantInputReadLoop(screen, networkPipe, localGame):
             #                   curses.keyname(char_in)))
 
             # todo switch to chat input method if / char is pressed
+
+            # todo remove this temp speed control
+            if char_in == ord('l'):
+                localGame.timingClock.tick /= 2
+                log("(CURSE ANIM): increasing speed of animations %f seconds-a-frame\n"%localGame.timingClock.tick)
+            elif char_in == ord('j'):
+                localGame.timingClock.tick *= 2
+                log("(CURSE ANIM): decreasing speed of animations %f seconds-a-frame\n"%localGame.timingClock.tick)
 
             respondToInput(char_in, networkPipe)
 
