@@ -1,12 +1,13 @@
 import sys
 import json
-import os
 import glob
+
 
 class ParseAssetError(Exception):
     pass
 
-#debuggin method
+
+#debugging method
 def drawCharacterAndHitbox(drawing, hitbox):
 
     #convert hitbox to 2d array
@@ -99,8 +100,28 @@ class GraphicAsset():
                 errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
                 raise ParseAssetError(errorString)
 
-    def __repr__(self):
-        return "height:"
+
+
+#returns one graphic asset instance, primarily for debugging, game should use factory method getAllAssets()
+def CreateFromJSON(jsonString, name=None):
+    try:
+        data = json.loads(jsonString)
+    except ValueError as e:
+        raise ParseAssetError("failed to decode asset from json string\n" + str(e))
+    asset = GraphicAsset(data, name)
+    return asset
+
+
+def testOneAsset(jsonString):
+    try:
+        asset = CreateFromJSON(jsonString)
+    except ParseAssetError as err:
+        return err
+    else:
+        output = "GraphicAssets.py Successfully created asset from JSON\n"
+        output += drawCharacterAndHitbox(asset.drawings[0], asset.hitbox)
+        return output
+
 
 #will return a dictionary of name:assets
 def getAllAssets(debug = False):
@@ -114,7 +135,7 @@ def getAllAssets(debug = False):
             try:
                 data = json.load(assetFile)
             except ValueError:
-                if debug: print f, " failed to decode json"
+                if debug: print f, " failed to decode json from file"
                 continue
             try:
                 asset = GraphicAsset(data, name)

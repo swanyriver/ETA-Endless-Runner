@@ -16,7 +16,7 @@
 #
 import webapp2
 import json
-
+import GraphicAssetsSYMLINK
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -73,7 +73,14 @@ class MainHandler(webapp2.RequestHandler):
         if drawings:
             outputDict[kDRAWING] = drawings
             self.response.headers['Content-Type'] = "application/json"
-            self.response.write(json.dumps(outputDict, indent=2))
+
+            #todo put this in a iframe
+            #todo save to temp file for later download
+            jsonOutput = json.dumps(outputDict, indent=2)
+            self.response.write(jsonOutput + "\n")
+
+            self.response.write( "\n" + GraphicAssetsSYMLINK.testOneAsset(jsonOutput))
+
         else:
             self.response.headers['Content-Type'] = "text/plain"
             self.response.write("Error: drawing must have at least one frame with at least one character")
