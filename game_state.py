@@ -146,7 +146,6 @@ class Gamestate():
 
     #recieves a character from client
     def get_change_request(self, msg):
-        # todo ### Brandon will attach hitbox detection here
 
         cachedPlayerPos = self.player.getYX()
 
@@ -162,10 +161,11 @@ class Gamestate():
         playerCollision, collidedEntity = gameEntities.checkCollision(self.entities, self.player)
         if playerCollision == gameEntities.COLLIDED:
             self.player.setYX(*cachedPlayerPos)
-            print "(GAME-STATE): player has colided at pos:", self.player.getYX(), "with", collidedEntity
+            print "(GAME-STATE): player has collided at pos:", self.player.getYX(), "with", collidedEntity
             #todo don't send network message? return None and have network check before transmit
         elif playerCollision == gameEntities.DEAD:
             print "(GAME-STATE): player has died at pos:", self.player.getYX(), collidedEntity
+            #NOTE: this is currently not ending game on client because gameOver is empty dict
             return gameEntities.JSONforNetwork(
                 charX=self.player.x,
                 charY=self.player.y,

@@ -41,7 +41,22 @@ control_scheme = {
 class TimingClock():
     def __init__(self):
         self.tick = TICK
-    # todo (performance / quality) add method for advancing frames uniformly on each screen refresh, VERY LOW P
+        self.time = time.time()
+
+    def getTime(self):
+        return self.time
+
+    def setFrameTime(self):
+        self.time = time.time()
+
+    def speedUo(self):
+        self.tick /= 2
+        log("(CURSE ANIM): increasing speed of animations %f seconds-a-frame\n" % self.tick)
+
+    def slowDown(self):
+        self.tick *= 2
+        log("(CURSE ANIM): increasing speed of animations %f seconds-a-frame\n" % self.tick)
+
 
 # gamEntity subclass for encapsulating the drawing related methods
 class DrawableEntity(gameEntities.gameEntity):
@@ -69,7 +84,6 @@ class DrawableEntity(gameEntities.gameEntity):
 
 
     #todo add color
-    #todo choose drawing index by animation sequence
     def getDrawingFrame(self, frame):
         return [gameEntities.Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[frame][y][x]))
                 for y in range(self.graphic.height)
@@ -81,14 +95,14 @@ class DrawableEntity(gameEntities.gameEntity):
 
     def getDrawing(self):
 
-        timeSinceFrameChange = (time.time() - self.lastFrameTime)
+        timeSinceFrameChange = (self.timingClock.getTime() - self.lastFrameTime)
 
         # advance current frame to appropriate frame
         #  if TICK < SCREEN_REFRESH (currently 1/10) or program has hung frames might be skipped (intended effect)
         while timeSinceFrameChange >= self.frameDurations[self.currentFrame] * self.timingClock.tick:
             timeSinceFrameChange -= self.frameDurations[self.currentFrame] * self.timingClock.tick
             self.currentFrame = (self.currentFrame + 1) % len(self.graphic.drawings)
-            self.lastFrameTime = time.time()
+            self.lastFrameTime = self.timingClock.getTime()
 
             # debug log for animation transition
             # log(str(self) + "Advanced frame to frame %d/%d\n"%(self.currentFrame, len(self.graphic.drawings)) +
@@ -130,14 +144,16 @@ class gameState():
                             entity.getDrawing()):
             screen.addch(*pixel)
 
-    # todo (performance) only redraw invalid pixels (where the player is most times)
     def render(self, screen):
         screen.erase()
+        self.timingClock.setFrameTime()
         for e in self.entities:
             self.drawEntity(e, screen)
 
         if None not in self.character.getYX():
             self.drawEntity(self.character, screen)
+
+        screen.refresh()
 
 
 def startCurses():
@@ -243,14 +259,6 @@ def constantInputReadLoop(screen, networkPipe, localGame):
             #                   curses.keyname(char_in)))
 
             # todo switch to chat input method if / char is pressed
-
-            # todo remove this temp speed control
-            if char_in == ord('l'):
-                localGame.timingClock.tick /= 2
-                log("(CURSE ANIM): increasing speed of animations %f seconds-a-frame\n"%localGame.timingClock.tick)
-            elif char_in == ord('j'):
-                localGame.timingClock.tick *= 2
-                log("(CURSE ANIM): decreasing speed of animations %f seconds-a-frame\n"%localGame.timingClock.tick)
 
             respondToInput(char_in, networkPipe)
 
