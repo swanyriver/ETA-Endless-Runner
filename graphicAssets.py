@@ -1,7 +1,7 @@
 import sys
 import json
 import glob
-
+import os
 
 class ParseAssetError(Exception):
     pass
@@ -19,6 +19,7 @@ def drawCharacterAndHitbox(drawing, hitbox):
     return hitboxstring
 
 
+#todo hitbox algo change to flood fill
 def getHitbox(height, width, drawing):
     hitbox = set([(y, x) for y in range(height) for x in range(width)])
     # send probes from outer edge removing cords from hitbox
@@ -87,9 +88,8 @@ class GraphicAsset():
                 if not (isinstance(s, str) or isinstance(s, unicode)):
                     raise ParseAssetError("drawings must contain arrays of strings")
                 if len(s) != self.width:
-                    errorString = "each line of drawing must be the same width, first line width:%d\n"%self.width \
-                                  + '\n'.join(d) \
-                                  + str([len(line) for line in d])
+                    errorString = "each line of drawing must be the same width, lineWidths:%s\n"%str([len(line) for line in d]) \
+                                  + '\n'.join(d)
                     raise ParseAssetError(errorString)
 
 
@@ -108,6 +108,7 @@ class GraphicAsset():
 
 
 #returns one graphic asset instance, primarily for debugging, game should use factory method getAllAssets()
+# used for web app testing of generated JSON over html interface
 def CreateFromJSON(jsonString, name=None):
     try:
         data = json.loads(jsonString)
@@ -115,6 +116,23 @@ def CreateFromJSON(jsonString, name=None):
         raise ParseAssetError("failed to decode asset from json string\n" + str(e))
     asset = GraphicAsset(data, name)
     return asset
+
+
+def createFromFileName(filename, debug=False):
+    name = filename.split("/")[-1]
+    name = name.split(".")[0]
+    with open(filename, 'r') as assetFile:
+        try:
+            data = json.load(assetFile)
+        except ValueError:
+            if debug: print filename, " failed to decode json from file"
+            return None
+        try:
+            asset = GraphicAsset(data, name)
+            return asset
+        except ParseAssetError as err:
+            if debug: print filename, " failed to construct: ", err
+            return None
 
 
 def testOneAsset(jsonString):
@@ -129,35 +147,95 @@ def testOneAsset(jsonString):
 
 
 #will return a dictionary of name:assets
+DIRECTORY = "graphics"
+FILE_TYPE = ".json"
+
+def getAssetFileNames():
+    return glob.glob("%s/*%s"%(DIRECTORY, FILE_TYPE))
+
+
 def getAllAssets(debug = False):
 
-    graphicAssets = {}
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype:dict[str, GraphicAsset]
+    """
 
-    for f in glob.glob("graphics/*.json"):
-        name = f.split("/")[-1]
-        name = name.split(".")[0]
-        with open(f, 'r') as assetFile:
-            try:
-                data = json.load(assetFile)
-            except ValueError:
-                if debug: print f, " failed to decode json from file"
-                continue
-            try:
-                asset = GraphicAsset(data, name)
-                graphicAssets[name] = asset
-            except ParseAssetError as err:
-                if debug: print f, " failed to construct: ", err
+    graphicAssets = {g.name:g for g in
+                     filter(None, (
+                         createFromFileName(f, debug=debug) for f in getAssetFileNames()
+                        ))
+                     }
 
     if debug:
         print "%d assets parsed from files"%len(graphicAssets)
         print graphicAssets.keys()
 
+    if not graphicAssets:
+        errorString = "(CRITICAL ERROR): Graphic Library is empty CAUSE: " + \
+            ("No %s files available in /%s folder or no %s folder"%(FILE_TYPE, DIRECTORY, DIRECTORY)
+                if not getAssetFileNames()
+                else "None of the %d asset files were properly formatted"%len(getAssetFileNames()))
+        raise ParseAssetError(errorString)
+
     return graphicAssets
 
 
+def getPlayerAsset(debug = False):
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype: GraphicAsset
+    """
+    PLAYER_FILE_LOC = "graphics/reserved/player" + FILE_TYPE
+    if not os.path.isfile(PLAYER_FILE_LOC):
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset not present at: %s"%PLAYER_FILE_LOC)
+
+    player = createFromFileName(PLAYER_FILE_LOC)
+
+    if not player:
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset could not be parsed")
+
+    #todo make the return of this function the default param for the player __init__() and render side player entity
+    return player
+
+
+def displayGraphicLibrary():
+    ga = getAllAssets().values() + [getPlayerAsset()]
+    for g in ga:
+        print "Asset: %s    H:%d  W:%d" % (g.name, g.height, g.width), "  <DEADLY>" if g.deadly else ""
+        print "\nDRAWING AND HIBOX:"
+        print drawCharacterAndHitbox(g.drawings[0], g.hitbox)
+
+        if len(g.drawings) > 1:
+            print "\nANIMATION FRAMES:\n"
+            PADDING = 4
+            perRow = 80 // (g.width + PADDING)
+
+            leftIndex = 0
+            rightIndex = 0
+            while rightIndex < len(g.drawings):
+                rightIndex += perRow
+                leftIndex = rightIndex - perRow
+
+                for row in range(g.height):
+                    print (" " * PADDING).join(
+                        g.drawings[frame][row] for frame in range(leftIndex, min(rightIndex, len(g.drawings)))
+                    )
+                print ""
+
+        print "--------------------------------------"
+        print "--------------------------------------"
+
+
+
 if __name__ == '__main__':
+
+    if "-d" in sys.argv or "-display" in sys.argv:
+        displayGraphicLibrary()
+
     if len(sys.argv) > 1:
         pass
         #todo read and display one asset in curses, with color and hitbox
     else:
         getAllAssets(debug=True)
+        getPlayerAsset(debug=True)

@@ -110,6 +110,22 @@ class DrawableEntity(gameEntities.gameEntity):
 
         return self.getDrawingFrame(self.currentFrame)
 
+#
+class renderPlayer(DrawableEntity):
+    def __init__(self, timingClock):
+        super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock)
+        #todo create 2 or 4 way symmetrical drawings for character
+        #todo create rotated or flipped drawings of character arrays to load before drawing
+        #self.letfFaceDrawing =
+
+    # def getDrawing(self):
+    #     return super(renderPlayer, self).getDrawing()
+
+    def setYX(self, y, x):
+        #todo check new y and x and swap drawing for proper rotation
+        super(renderPlayer, self).setYX(y, x)
+
+
 
 class gameState():
     def __init__(self, assets, maxY, maxX):
@@ -118,7 +134,8 @@ class gameState():
         self.entities = []
         self.assets = assets
         self.timingClock = TimingClock()
-        #todo this is very fragile, consider another way of selecting character drawing
+        #todo this is very fragile, consider another way of selecting character drawing, use player class when complete
+        #self.character = renderPlayer(self.timingClock)
         self.character = DrawableEntity(assets["character"], None, None, self.timingClock)
 
     def newScreen(self, newEntities):
