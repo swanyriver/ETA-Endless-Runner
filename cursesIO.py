@@ -134,9 +134,7 @@ class gameState():
         self.entities = []
         self.assets = assets
         self.timingClock = TimingClock()
-        #todo this is very fragile, consider another way of selecting character drawing, use player class when complete
-        #self.character = renderPlayer(self.timingClock)
-        self.character = DrawableEntity(assets["character"], None, None, self.timingClock)
+        self.player = renderPlayer(self.timingClock)
 
     def newScreen(self, newEntities):
         self.entities = []
@@ -148,13 +146,13 @@ class gameState():
                 timingClock=self.timingClock
             ))
         #character position is invalidated on new screen
-        self.character.setYX(None, None)
+        self.player.setYX(None, None)
         log("(CURSES-GAME): new screens entities: (%d) "%len(self.entities)
             + str(self.entities) + "\n")
 
     def updateCharPos(self, y, x):
-        self.character.setYX(y, x)
-        log("(CURSES-GAME): char new pos %s\n"%(str(self.character.getYX())))
+        self.player.setYX(y, x)
+        log("(CURSES-GAME): char new pos %s\n" % (str(self.player.getYX())))
 
     def drawEntity(self, entity, screen):
         for pixel in filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX,
@@ -167,8 +165,8 @@ class gameState():
         for e in self.entities:
             self.drawEntity(e, screen)
 
-        if None not in self.character.getYX():
-            self.drawEntity(self.character, screen)
+        if None not in self.player.getYX():
+            self.drawEntity(self.player, screen)
 
         screen.refresh()
 

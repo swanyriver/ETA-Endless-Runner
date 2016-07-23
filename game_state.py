@@ -14,7 +14,7 @@ import gameFunctions
 class Player(gameEntities.gameEntity):
     #takes up one space, which shouldn't automatically be -1, -1;
     #invalid location until set for gameplay
-    def __init__(self, graphicAsset):
+    def __init__(self, graphicAsset=graphicAssets.getPlayerAsset()):
         super(Player, self).__init__(graphicAsset, -1, -1)
 
 
@@ -120,8 +120,7 @@ class Gamestate():
         self.t1 = 0
         self.gaLibrary = graphicAssets.getAllAssets()
 
-        #todo hardcode key for player representation and change asset name to 'player' to avoid confusion
-        self.player = Player(self.gaLibrary['character'])
+        self.player = Player()
 
         #add obstacles initially?
         self.entities = gameFunctions.getNewGameRoom(self)
