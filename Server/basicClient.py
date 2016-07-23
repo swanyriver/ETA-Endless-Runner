@@ -23,12 +23,11 @@ def main(argv):
 
     #--connect to server--#
     #create sock stream and connect  
-
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((TCP_IP, TCP_PORT))
     s.setblocking(0)
 
-    userHandle="vertical"#TODO determine if which Client
+    userHandle="UserName"#TODO determine if which Client
 
     #get initial input
     MESSAGE = getUserInput(userHandle)

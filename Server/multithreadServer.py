@@ -1,18 +1,30 @@
 import socket
 import threading
+import thread
 import SocketServer
+import time
 
-#TODO TODO
-class dummyGameState(threading.Lock):
-    print "lock"
+#TODO object definition
+count=0
+
+def test(count):
+    #lock.acquire()
+    try:
+        count += 1
+        print count 
+        time.sleep(25)
+   
+    finally:
+       print "done"# lock.release()
+       return count
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client
         self.request.setblocking(0)
-        #TODO TODO
-        GS=dummyGameState.lock()
+        
+        global count
 
         while serverActive:
             received=""
@@ -21,28 +33,41 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             except:
                 pass
             
-            if received==0:
+            if received==0:#TODO fix close reason
                 serverActive=False
             elif received !="":
                 cur_thread = threading.current_thread()
                 response = "{}: {}".format(cur_thread.name, received)
                 print response
-                #TODO TODO
-                if GS.locked():
-                    print "thread is locked Please wait"
-                elif response=="0":
-                    GS.aquire()
-                elif response=="1":
-                    GS.release()
                 self.request.sendall(response)
+                #TODO TODO
+                #lock = threading.Lock()
+                print "current count:"
+                print count
+
+                if received=="LOCK":
+                    lock.acquire()
+                    print "aquired lock"
+                    #Do stuff here
+                    count=test(count)
+                    print "Test complete"
+                    lock.release()
+                    print "released lock"
+                else:
+                    continue
+                #TODO NOT REACHING THIS LINE
+                print "send info to client now, current count:"
+                print count
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
 if __name__ == "__main__":
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = "localhost", 9999
-    
+    HOST, PORT = "localhost", 9998
+    ##TODO
+    lock = threading.Lock()
+
     #-- client code --# 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
