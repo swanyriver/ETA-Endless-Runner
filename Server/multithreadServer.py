@@ -16,6 +16,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         serverActive=True
         # self.request is the TCP socket connected to the client
         self.request.setblocking(0)
+        #client #
+        client=0
 
         while serverActive:
             received=""
@@ -27,6 +29,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             
             if received==0:
                 serverActive=False
+                #TODO set condition to gracefully close server
             elif received !="":
                 cur_thread = threading.current_thread()
                 response = "{}: {}".format(cur_thread.name, received)
@@ -36,8 +39,10 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
                 #check if client is vertical or horizontal
                 if cur_thread.name=="Thread-2":
+                    client=1
                     #TODO allow horizontal movement
                 elif cur_thread.name=="Thread-3":
+                    client=2
                     #TODO allow vertical movement
                 else:
                     print "Too many players, please wait"
@@ -85,9 +90,10 @@ if __name__ == "__main__":
 
     live=True;
     while live:
-        if clientMsg=="quit":
-           live=False
-            print clientMsg
+    #TODO set server graceful close methods
+    #    if clientMsg=="quit":
+    #        live=False
+    #        print clientMsg
         continue
 
     server.shutdown()
