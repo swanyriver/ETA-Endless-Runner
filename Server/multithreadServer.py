@@ -40,8 +40,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 response = "{}: {}".format(cur_thread.name, received)
                 print response
                 self.request.sendall(response)
-                #TODO TODO
-                #lock = threading.Lock()
+                #TODO 
                 print "current count:"
                 print count
 
