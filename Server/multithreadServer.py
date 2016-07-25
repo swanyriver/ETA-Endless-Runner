@@ -2,75 +2,79 @@ import socket
 import threading
 import thread
 import SocketServer
-import time
 
-#TODO object definition
-count=0
-
-def test(count):
-    #lock.acquire()
+#TODO remove TESTING only
+def test():
     try:
         count += 1
-        print count 
-        time.sleep(25)
-   
+        print count    
     finally:
-       print "done"# lock.release()
-       return count
+       print "done"
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client
         self.request.setblocking(0)
-        
-        global count
 
         while serverActive:
             received=""
             try:
-                received=self.request.recv(1024) #don't think recv works here
+                received=self.request.recv(1024) 
+                #note:recv'd doesn't have to be 1024
             except:
                 pass
             
-            if received==0:#TODO fix close reason
+            if received==0:
                 serverActive=False
             elif received !="":
                 cur_thread = threading.current_thread()
                 response = "{}: {}".format(cur_thread.name, received)
+                #print client response
                 print response
                 self.request.sendall(response)
-                #TODO 
-                print "current count:"
-                print count
 
+                #check if client is vertical or horizontal
+                if cur_thread.name=="Thread-2":
+                    #TODO allow horizontal movement
+                elif cur_thread.name=="Thread-3":
+                    #TODO allow vertical movement
+                else:
+                    print "Too many players, please wait"
+
+                #TESTING -- replace with item lock
                 if received=="LOCK":
                     lock.acquire()
                     print "aquired lock"
                     #Do stuff here
-                    count=test(count)
+                    test()
                     print "Test complete"
                     lock.release()
                     print "released lock"
+                #---#
                 else:
                     continue
-                #TODO NOT REACHING THIS LINE
-                print "send info to client now, current count:"
-                print count
+                print "send info to client now"
+                #TODO send game state
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
 if __name__ == "__main__":
-    # Port 0 means to select an arbitrary unused port
+    # Port 0 selects an arbitrary unused port
     HOST, PORT = "localhost", 9998
-    ##TODO
+    ##create lock object
     lock = threading.Lock()
+    #global variables/objects must be created in main prior to threading
+    global count    
 
-    #-- client code --# 
+     #-- client code --# 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
+
+    #print port so client can connect
     print port
+
     # Start a thread with the server -- that thread will then start one
     # more thread for each request
     server_thread = threading.Thread(target=server.serve_forever)
@@ -81,9 +85,9 @@ if __name__ == "__main__":
 
     live=True;
     while live:
-        #if clientMsg=="\quit"
-        #   live=False
-        #printclient msg
+        if clientMsg=="quit":
+           live=False
+            print clientMsg
         continue
 
     server.shutdown()
