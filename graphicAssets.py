@@ -19,37 +19,40 @@ def drawCharacterAndHitbox(drawing, hitbox):
     return hitboxstring
 
 
-#todo hitbox algo change to flood fill
+def getNeighborTuples(y,x):
+    return [
+        (y-1, x), (y+1, x),
+        (y, x-1), (y, x+1)
+    ]
+
+
 def getHitbox(height, width, drawing):
-    hitbox = set([(y, x) for y in range(height) for x in range(width)])
-    # send probes from outer edge removing cords from hitbox
-    # top to bottom
-    for y in range(height):
-        for x in range(width):
-            if drawing[y][x] == " " and (y,x) in hitbox:
-                hitbox.remove((y,x))
-            else:
-                break
-        for x in reversed(range(width)):
-            if drawing[y][x] == " " and (y, x) in hitbox:
-                hitbox.remove((y, x))
-            else:
-                break
+    # FloodFill algorithm for defining drawings hitbox
+    allPixels = set([(y, x) for y in range(height) for x in range(width)])
 
-    # left to right
-    for x in range(width):
-        for y in range(height):
-            if drawing[y][x] == " " and (y, x) in hitbox:
-                hitbox.remove((y, x))
-            else:
-                break
-        for y in reversed(range(height)):
-            if drawing[y][x] == " " and (y, x) in hitbox:
-                hitbox.remove((y, x))
-            else:
-                break
+    safe = set(
+        [(-1,x) for x in range(width)] +
+        [(height,x) for x in range(width)] +
+        [(y, -1) for y in range(height)] +
+        [(y, width) for y in range(height)]
+    )
 
-    return hitbox
+    search = set(safe)
+
+    while search:
+        n = search.pop()
+        neighbors = [(y,x) for y,x in getNeighborTuples(*n) if
+                     0 <= y < height and 0 <= x < width and
+                     drawing[y][x] == " " and
+                     (y,x) not in safe]
+
+        safe.update(neighbors)
+        search.update(neighbors)
+
+    # after flood fill all reachable space characters are marked safe, hitbox will be remaining
+    # Htibox may include enclosed space characters (intended)
+    # Htibox may not be contiguous (intended)
+    return allPixels.difference(safe)
 
 
 class GraphicAsset():
@@ -149,6 +152,7 @@ def testOneAsset(jsonString):
 #will return a dictionary of name:assets
 DIRECTORY = "graphics"
 FILE_TYPE = ".json"
+
 
 def getAssetFileNames():
     return glob.glob("%s/*%s"%(DIRECTORY, FILE_TYPE))
