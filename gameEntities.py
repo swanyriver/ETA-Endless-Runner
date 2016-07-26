@@ -71,10 +71,8 @@ def JSONforNetwork(screen=None, charY=None, charX=None, gameOver=None):
         output[kGAMEOVER] = gameOver
     return json.dumps(output) + "\n"
 
-# entities = array of gameEntity instances, player is instance of game_state.Player
 COLLIDED = 1
 DEAD = -1
-
 def checkCollision(entities, player):
     """
     :type entities: [gameEntity]
