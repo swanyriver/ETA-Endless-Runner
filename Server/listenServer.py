@@ -38,14 +38,12 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 print response
                 self.request.sendall(response)
 
-                #TESTING -- replace with
-                # if received == up/down/left/right
+                #TESTING -- replace with item lock
                 if received=="LOCK":
                     lock.acquire()
                     print "aquired lock"
 
                     ## Do stuff here ##
-                    ## updatedState = game.get_change_request(data)
 
                     #check if client is vertical or horizontal
                     if cur_thread.name=="Thread-2":
@@ -56,17 +54,18 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                         #TODO allow vertical movement
                     else:
                         print "Too many players, please wait"
-                                    
+                        
+                    #call function here
+                    test()
+            
                     lock.release()
                     print "released lock"
                 #-- End of locked thread --#
 
                 else:
                     continue
-                ## TODO send client movement    
-                ## print "sent to client: " + updatedState
-                ## self.request.sendall(updatedState + "\n")
-                    
+                    #TODO send game state
+                    #self.join TODO join threads if they are done
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
