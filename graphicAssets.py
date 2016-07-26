@@ -186,7 +186,7 @@ def getPlayerAsset(debug = False):
     :param debug: display verboase message on parse failure if true
     :rtype: GraphicAsset
     """
-    PLAYER_FILE_LOC = "graphics/reserved/player" + FILE_TYPE
+    PLAYER_FILE_LOC = DIRECTORY + "/reserved/player" + FILE_TYPE
     if not os.path.isfile(PLAYER_FILE_LOC):
         raise ParseAssetError("(CRITICAL ERROR): player graphic asset not present at: %s"%PLAYER_FILE_LOC)
 
@@ -199,8 +199,13 @@ def getPlayerAsset(debug = False):
     return player
 
 
-def displayGraphicLibrary():
-    ga = getAllAssets().values() + [getPlayerAsset()]
+def displayGraphicLibrary(ga=None):
+    ga = ga or getAllAssets().values() + [getPlayerAsset()]
+
+    print "\n\n------------------------------------------"
+    print "--------- FULL GRAPHICS LIBRARY ----------"
+    print "------------------------------------------"
+
     for g in ga:
         print "Asset: %s    H:%d  W:%d" % (g.name, g.height, g.width), "  <DEADLY>" if g.deadly else ""
         print "\nDRAWING AND HIBOX:"
@@ -232,10 +237,13 @@ if __name__ == '__main__':
 
     if "-d" in sys.argv or "-display" in sys.argv:
         displayGraphicLibrary()
+        exit()
 
-    if len(sys.argv) > 1:
+    elif "-f" in sys.argv and len(sys.argv) > sys.argv.index("-f"):
+        print "testing file %s"%sys.argv[sys.argv.index("-f") + 1]
         pass
         #todo read and display one asset in curses, with color and hitbox
     else:
-        getAllAssets(debug=True)
-        getPlayerAsset(debug=True)
+        graphics = getAllAssets(debug=True)
+        player = getPlayerAsset(debug=True)
+        displayGraphicLibrary(ga=(graphics.values() + [player]))
