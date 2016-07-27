@@ -11,13 +11,14 @@ def playerLeftScreen(Game):
 #todo generate random screens
 def getNewGameRoom(Game):
     #####How to use gameEntities to create a new screen################
-    ## get 2 arrays of all deadly and non deadly graphics
-    # hazards = [g for g in Game.gaLibrary.values() if g.deadly]
-    # hazards = [g for g in Game.gaLibrary.values() if (not g.deadly and g.name != "character")]
-    #
-    # #check the height and width of a graphic
-    # #hazards[0].heigth, hazards.width[0]
-    #
+    # get 2 arrays of all deadly and non deadly graphics
+    #hazards = [g for g in Game.gaLibrary.values() if g.deadly]
+    #obstacles = [g for g in Game.gaLibrary.values() if not g.deadly]
+
+    # check the height and width of a graphic
+    #hazards[0].heigth
+    #hazards[0].width
+
     # #create an entitity from a graphic
     # #an entity is just a graphic with an x,y position and helper methods
     # #there can be many entities made from the same graphic
@@ -41,8 +42,7 @@ def getNewGameRoom(Game):
     gaLibrary = Game.gaLibrary
     NUM_GEN = 4
     entities = []
-    availables = filter(lambda k: k != "character", gaLibrary.keys())
-    for k in [random.choice(availables) for _ in range(NUM_GEN)]:
+    for k in [random.choice(gaLibrary.keys()) for _ in range(NUM_GEN)]:
         y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
         entities.append(gameEntities.gameEntity(gaLibrary[k], y, x))
     print entities
