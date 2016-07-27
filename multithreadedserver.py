@@ -12,23 +12,27 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         cur_thread = threading.current_thread()
         myMessageQue = []
 
+
         #send fist game room/map to client and add que to directory
         lock.acquire()
+        # if not all actions have been taken assign one set to this thread
+        if availableActionSets:
+            allowedActionsForThreads[cur_thread.ident] = availableActionSets.pop()
         self.request.sendall(game.get_update()+ "\n")
-        threadOutgoingMessages[cur_thread.name] = myMessageQue
+        threadOutgoingMessages[cur_thread.ident] = myMessageQue
         lock.release()
 
         while serverActive:
 
-            # if threadOutgoingMessages[cur_thread.name]:
-            #     lock.acquire()
-            #     for msg in threadOutgoingMessages[cur_thread.name]:
-
             if myMessageQue:
                 lock.acquire()
-                while myMessageQue:
-                    self.request.sendall(myMessageQue.pop(0) + "\n")
+                # copy refrence to strings to be sent and empty que in dictionary
+                messagesToSend = list(myMessageQue)
+                del myMessageQue[:]
                 lock.release()
+
+                for msg in messagesToSend:
+                    self.request.sendall(msg + "\n")
 
 
             received=""
@@ -52,17 +56,17 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                     # todo relay chat message
                     print "(NETWORK) chat received: ", repr()
 
-                elif cur_thread.name in allowedMovements.keys() and received in allowedMovements[cur_thread.name]:
+                elif cur_thread.ident in allowedActionsForThreads and \
+                                received in allowedActionsForThreads[cur_thread.ident]:
                     lock.acquire()
                     updatedState = game.get_change_request(received)
-                    for threadname, theirmessageQue in threadOutgoingMessages.items():
-                        if threadname != cur_thread.name: theirmessageQue.append(updatedState)
+                    for threadIdent, theirmessageQue in threadOutgoingMessages.items():
+                        if threadIdent != cur_thread.ident: theirmessageQue.append(updatedState)
                     lock.release()
 
                 #-- End of locked thread --#
 
                     ## send client movement
-                    #todo send to other client
                     print "sent to client: " + updatedState
                     self.request.sendall(updatedState + "\n")
 
@@ -92,10 +96,12 @@ if __name__ == "__main__":
     #create a new game state
     game = game_state.Gamestate()
 
-    allowedMovements = {
-        "Thread-2": [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right],
-        "Thread-3": [networkKeys.ACTIONS.up, networkKeys.ACTIONS.down],
-    }
+    allowedActionsForThreads = {}
+
+    availableActionSets = [
+        [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right],
+        [networkKeys.ACTIONS.up, networkKeys.ACTIONS.down],
+    ]
 
     threadOutgoingMessages = {}
 
