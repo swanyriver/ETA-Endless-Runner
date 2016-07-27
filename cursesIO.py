@@ -15,13 +15,6 @@ OFF = 0
 SCREEN_REFRESH = .05 # 20FPS
 TICK = .5            # starting frequency of frame transitions for animation,  half second
 
-# sadly there is no Enum class or pattern in python 2.x so this class will need to be used with extreme caution
-class ACTIONS():
-    up = "w"
-    down = "s"
-    left = "a"
-    right = "d"
-    quit = "q"
 
 # int to int, mapping keyboard key to action enum
 control_scheme = {
