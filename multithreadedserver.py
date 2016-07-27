@@ -9,11 +9,28 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         # self.request is the TCP socket connected to the client
         self.request.setblocking(0)
 
-        #send fist game room/map to client
-        self.request.sendall(game.get_update()+ "\n")
+        cur_thread = threading.current_thread()
+        myMessageQue = []
 
+        #send fist game room/map to client and add que to directory
+        lock.acquire()
+        self.request.sendall(game.get_update()+ "\n")
+        threadOutgoingMessages[cur_thread.name] = myMessageQue
+        lock.release()
 
         while serverActive:
+
+            # if threadOutgoingMessages[cur_thread.name]:
+            #     lock.acquire()
+            #     for msg in threadOutgoingMessages[cur_thread.name]:
+
+            if myMessageQue:
+                lock.acquire()
+                while myMessageQue:
+                    self.request.sendall(myMessageQue.pop(0) + "\n")
+                lock.release()
+
+
             received=""
             try:
                 received=self.request.recv(1024)
@@ -26,7 +43,6 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 serverActive=False
 
             elif received !="":
-                cur_thread = threading.current_thread()
                 #use repr to show whitespace explicitly
                 response = "{}: {}".format(cur_thread.name, repr(received))
                 #print client response
@@ -36,9 +52,11 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                     # todo relay chat message
                     print "(NETWORK) chat received: ", repr()
 
-                elif received in allowedMovements[cur_thread.name]:
+                elif cur_thread.name in allowedMovements.keys() and received in allowedMovements[cur_thread.name]:
                     lock.acquire()
                     updatedState = game.get_change_request(received)
+                    for threadname, theirmessageQue in threadOutgoingMessages.items():
+                        if threadname != cur_thread.name: theirmessageQue.append(updatedState)
                     lock.release()
 
                 #-- End of locked thread --#
@@ -58,7 +76,7 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 if __name__ == "__main__":
     # Port 0 selects an arbitrary unused port
-    HOST, PORT = "localhost", 9997
+    HOST, PORT = "localhost", 9999
     ##create lock object
     lock = threading.Lock()
     #global variables/objects must be created in main prior to threading
@@ -78,6 +96,8 @@ if __name__ == "__main__":
         "Thread-2": [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right],
         "Thread-3": [networkKeys.ACTIONS.up, networkKeys.ACTIONS.down],
     }
+
+    threadOutgoingMessages = {}
 
     # Start a thread with the server -- that thread will then start one
     # more thread for each request
