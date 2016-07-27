@@ -9,6 +9,10 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         # self.request is the TCP socket connected to the client
         self.request.setblocking(0)
 
+        #send fist game room/map to client
+        self.request.sendall(game.get_update()+ "\n")
+
+
         while serverActive:
             received=""
             try:
@@ -28,29 +32,6 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 #print client response
                 print response
 
-                # todo (Megan) Was this for Testing?
-                #send response
-                #self.request.sendall(response)
-
-                # if received in networkKeys.MOVEMENTS:
-                #     lock.acquire()
-                #
-                #     #check if client is vertical or horizontal
-                #     if cur_thread.name=="Thread-2":
-                #         #TODO allow horizontal movement
-                #         updatedState = game.get_change_request(data)
-                #         pass
-                #
-                #     elif cur_thread.name=="Thread-3":
-                #         #TODO allow vertical movement
-                #         updatedState = game.get_change_request(data)
-                #         pass
-                #
-                #     else:
-                #         print "Too many players, please wait"
-                #
-                #     lock.release()
-
                 if received[0] == networkKeys.ACTIONS.chat:
                     # todo relay chat message
                     print "(NETWORK) chat received: ", repr()
@@ -62,13 +43,13 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
                 #-- End of locked thread --#
 
+                    ## send client movement
                     #todo send to other client
                     print "sent to client: " + updatedState
                     self.request.sendall(updatedState + "\n")
 
                 else:
                     continue
-                ## send client movement    
 
 
 
@@ -77,7 +58,7 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 if __name__ == "__main__":
     # Port 0 selects an arbitrary unused port
-    HOST, PORT = "localhost", 9998
+    HOST, PORT = "localhost", 9997
     ##create lock object
     lock = threading.Lock()
     #global variables/objects must be created in main prior to threading
