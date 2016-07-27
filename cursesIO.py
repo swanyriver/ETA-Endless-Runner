@@ -2,7 +2,6 @@
 
 import curses
 import time
-from multiprocessing import Process, Pipe
 from log import log
 import graphicAssets
 import gameEntities
@@ -14,14 +13,8 @@ ON = 1
 OFF = 0
 
 SCREEN_REFRESH = .05 # 20FPS
+TICK = .5            # starting frequency of frame transitions for animation,  half second
 
-# sadly there is no Enum class or pattern in python 2.x so this class will need to be used with extreme caution
-class ACTIONS():
-    up = "w"
-    down = "s"
-    left = "a"
-    right = "d"
-    quit = "q"
 
 # int to int, mapping keyboard key to action enum
 control_scheme = {
@@ -37,28 +30,122 @@ control_scheme = {
     ord('q'):ACTIONS.quit
 }
 
+#simple wrapper around int to keep all animations on same speed
+class TimingClock():
+    def __init__(self):
+        self.tick = TICK
+        self.time = time.time()
+
+    def getTime(self):
+        return self.time
+
+    def setFrameTime(self):
+        self.time = time.time()
+
+    def speedUo(self):
+        self.tick /= 2
+        log("(CURSE ANIM): increasing speed of animations %f seconds-a-frame\n" % self.tick)
+
+    def slowDown(self):
+        self.tick *= 2
+        log("(CURSE ANIM): increasing speed of animations %f seconds-a-frame\n" % self.tick)
+
+
+# gamEntity subclass for encapsulating the drawing related methods
+class DrawableEntity(gameEntities.gameEntity):
+    def __init__(self, graphicAsset, y, x, timingClock):
+        super(DrawableEntity, self).__init__(graphicAsset, y, x)
+
+        if not len(graphicAsset.drawings) > 1:
+            self.getDrawing = self.getDrawingNoAnim
+        else:
+            self.currentFrame = 0
+            self.lastFrameTime = time.time()
+
+        self.timingClock = timingClock
+
+        #todo add these attributes to graphicAsset
+        #todo add these assets to Graphics maker applet
+        #todo add these assets to GraphicsAssets jsonPaser
+        self.frameDurations = [1] * len(self.graphic.drawings)
+        self.totalDuration = sum(self.frameDurations) * self.timingClock.tick
+
+        # DEBUG log for instantiating animated drawings
+        # log("DRAW INSTANCE:" + str(graphicAsset.name) + "\n" + "num frames:%d"%len(self.graphic.drawings) +
+        #     "\ntimings:%s\n"%str(self.frameDurations) +
+        #     "drawings: " + "\n".join("\n".join(d) for d in self.graphic.drawings))
+
+
+    #todo add color
+    def getDrawingFrame(self, frame):
+        return [gameEntities.Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[frame][y][x]))
+                for y in range(self.graphic.height)
+                for x in range(self.graphic.width)
+                if self.graphic.drawings[frame][y][x] != " "]
+
+    def getDrawingNoAnim(self):
+        return self.getDrawingFrame(0)
+
+    def getDrawing(self):
+
+        timeSinceFrameChange = (self.timingClock.getTime() - self.lastFrameTime)
+
+        # advance current frame to appropriate frame
+        #  if TICK < SCREEN_REFRESH (currently 1/10) or program has hung frames might be skipped (intended effect)
+        while timeSinceFrameChange >= self.frameDurations[self.currentFrame] * self.timingClock.tick:
+            timeSinceFrameChange -= self.frameDurations[self.currentFrame] * self.timingClock.tick
+            self.currentFrame = (self.currentFrame + 1) % len(self.graphic.drawings)
+            self.lastFrameTime = self.timingClock.getTime()
+
+            # debug log for animation transition
+            # log(str(self) + "Advanced frame to frame %d/%d\n"%(self.currentFrame, len(self.graphic.drawings)) +
+            #     "\n".join(self.graphic.drawings[self.currentFrame]) + "\n")
+
+        return self.getDrawingFrame(self.currentFrame)
+
+#
+class renderPlayer(DrawableEntity):
+    def __init__(self, timingClock):
+        super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock)
+        #todo create 2 or 4 way symmetrical drawings for character
+        #todo create rotated or flipped drawings of character arrays to load before drawing
+        #self.letfFaceDrawing =
+
+    # def getDrawing(self):
+    #     return super(renderPlayer, self).getDrawing()
+
+    def setYX(self, y, x):
+        #todo check new y and x and swap drawing for proper rotation
+        super(renderPlayer, self).setYX(y, x)
+
+
+
 class gameState():
     def __init__(self, assets, maxY, maxX):
         self.maxX = maxX
         self.maxY = maxY
         self.entities = []
         self.assets = assets
-        #todo this is very fragile, consider another way of selecting character drawing
-        self.character = gameEntities.gameEntity(assets["character"], None, None)
+        self.timingClock = TimingClock()
+        self.player = renderPlayer(self.timingClock)
 
     def newScreen(self, newEntities):
         self.entities = []
         for e in newEntities:
-            e['graphicAsset'] = self.assets[e['graphicAsset']]
-            self.entities.append(gameEntities.gameEntity(**e))
-        #character position is invalidated on new screen #todo ensure char pos is always transmitted after new screen
-        self.character.setYX(None, None)
+            self.entities.append(DrawableEntity(
+                y=e['y'],
+                x=e['x'],
+                graphicAsset=self.assets[e['graphicAsset']],
+                timingClock=self.timingClock
+            ))
+        #character position is invalidated on new screen
+        self.player.setYX(None, None)
         log("(CURSES-GAME): new screens entities: (%d) "%len(self.entities)
             + str(self.entities) + "\n")
 
     def updateCharPos(self, y, x):
-        self.character.setYX(y, x)
-        log("(CURSES-GAME): char new pos %s\n"%(str(self.character.getYX())))
+        self.player.setYX(y, x)
+        log("(CURSES-GAME): char new pos %s\n" % (str(self.player.getYX())))
 
     def drawEntity(self, entity, screen):
         for pixel in filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX,
@@ -67,11 +154,14 @@ class gameState():
 
     def render(self, screen):
         screen.erase()
+        self.timingClock.setFrameTime()
         for e in self.entities:
             self.drawEntity(e, screen)
 
-        if None not in self.character.getYX():
-            self.drawEntity(self.character, screen)
+        if None not in self.player.getYX():
+            self.drawEntity(self.player, screen)
+
+        screen.refresh()
 
 
 def startCurses():

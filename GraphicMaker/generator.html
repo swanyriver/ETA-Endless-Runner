@@ -9,7 +9,11 @@
 <form id="graphicForm" method="POST">
     <br><input type="checkbox" name="deadly">deadly<br><br>
     <label>Drawing Frame</label><br>
+    <!-- todo add category box -->
     <textarea id="drawingInput" rows="17" cols="80" name="drawings"></textarea> <br>
+    <!-- todo add frame length selector --->
+    <!-- todo get last added frame instead of first -->
+    <!-- todo also copy frame length box -->
     <input type="button" value="Add Animation Frame" onclick="
     document.getElementById('graphicForm').insertBefore(
         document.getElementById('drawingInput').cloneNode(), this
