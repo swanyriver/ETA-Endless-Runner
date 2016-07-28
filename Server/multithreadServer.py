@@ -29,10 +29,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                     received=self.request.recv(1024) 
                     #note:recv'd doesn't have to be 1024
                     print "list not empty"
-                elif not select.select(self.request):
-                    print "lisssst"
                 else:
-                    print select.select(self.request)
+                    print select.select([self.request],[],[]):
                     print "wtf"
                 #TODO#####################################
        
