@@ -2,93 +2,68 @@ import socket
 import threading
 import thread
 import SocketServer
-import sys
-
-#TODO remove TESTING only
-def test():
-    try:
-        count += 1
-        print count    
-    finally:
-       print "done"
-
+###
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client
         self.request.setblocking(0)
-        #client #
-        client=0
 
         while serverActive:
-            self.request.listen(3) ###
             received=""
             try:
-                #TODO ######################################
-                if select.select([self.request],[],[]) != ([],[],[]):
-                    self.request.sendall(response)
-                    received=self.request.recv(1024) 
-                    #note:recv'd doesn't have to be 1024
-                    print "list not empty"
-                elif not select.select(self.request):
-                    print "lisssst"
-                else:
-                    print select.select(self.request)
-                    print "wtf"
-                #TODO#####################################
-       
-            except OSError as err:
-                print("OS error: {0}".format(err))
-            except ValueError:
-                print("Could not convert data to an integer.")
+                received=self.request.recv(1024) 
+                #note:recv'd doesn't have to be 1024
             except:
-                print("Unexpected error:", sys.exc_info()[0])
                 pass
             
             if received==0:
                 serverActive=False
-                #TODO set condition to gracefully close server
 
             elif received !="":
-                
                 cur_thread = threading.current_thread()
                 response = "{}: {}".format(cur_thread.name, received)
-
                 #print client response
                 print response
-                if select.select(0, self):
-                    self.request.sendall(response)
+                #send response
+                self.request.sendall(response)
 
-                #TESTING -- replace with
                 # if received == up/down/left/right
-                if received=="LOCK":
+                if received=="w" or received =="a" or received=="s" or received=="d":
                     lock.acquire()
-                    print "aquired lock"
-
-                    ## Do stuff here ##
-                    ## updatedState = game.get_change_request(data)
 
                     #check if client is vertical or horizontal
                     if cur_thread.name=="Thread-2":
-                        client=1
-                        #TODO allow horizontal movement
+                        #allow horizontal movement
+                        if received =="a" or received=="d":
+                            updatedState = game.get_change_request(data)
+                        else:
+                            print "You control horizontal movement only!"
+
                     elif cur_thread.name=="Thread-3":
-                        client=2
-                        #TODO allow vertical movement
+                        if received =="w" or received=="s":
+                            updatedState = game.get_change_request(data)
+                        else:
+                            print "You control vertical movement only!"
+
                     else:
                         print "Too many players, please wait"
                                     
                     lock.release()
-                    print "released lock"
                 #-- End of locked thread --#
-                elif received=="exit":
-                    cur_thread.exit()
 
                 else:
                     continue
-                ## TODO send client movement    
-                ## print "sent to client: " + updatedState
-                #self.request.sendall(updatedState + "\n")
+
+                ## send client movement    
+                print "sent to client: " + updatedState
+                self.request.sendall(updatedState + "\n")
+                ##TODO working on joining threads for graceful close
+                ##TODO join isn't working
+                if(curthread.join()):
+                    serverActive=False
+                    print "No active connections, closing server"
+                    self.request.finish()
                     
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -119,10 +94,6 @@ if __name__ == "__main__":
 
     live=True;
     while live:
-    #TODO set server graceful close methods
-    #    if clientMsg=="quit":
-    #        live=False
-    #        print clientMsg
         continue
 
     server.shutdown()
