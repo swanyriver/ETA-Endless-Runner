@@ -42,6 +42,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 print("Could not convert data to an integer.")
             except:
                 print("Unexpected error:", sys.exc_info()[0])
+                serverActive=False #TODO BREAK HERE
                 pass
             
             if received==0:
