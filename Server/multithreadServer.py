@@ -21,7 +21,6 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         client=0
 
         while serverActive:
-            self.request.listen(3) ###
             received=""
             try:
                 #TODO ######################################
