@@ -47,7 +47,7 @@ def main(argv):
         if socketASends:
             s.sendall(random.choice(actions) + "\n")
         if socketBSends:
-            s.sendall(random.choice(actions) + "\n")
+            s2.sendall(random.choice(actions) + "\n")
 
         try:
             updateFromServer = s.recv(BUFFER_SIZE)
