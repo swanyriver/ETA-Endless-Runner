@@ -9,9 +9,6 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         serverActive=True
         # self.request is the TCP socket connected to the client
-        self.request.setblocking(0)
-        #client #
-        client=0
 
         while serverActive:
             received=""
@@ -26,24 +23,16 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                         print response
                         self.request.sendall(response)
                 else:
-                    print select.select([self.request],[],[])
-                    print "wtf"
+                    print "Socket resource not available to read"
                 #TODO#####################################
        
             except OSError as err:
                 print("OS error: {0}".format(err))
-            except ValueError:
-                print("Could not convert data to an integer.")
             except:
                 print("Unexpected error:", sys.exc_info())
-                serverActive=False #TODO BREAK HERE
+                serverActive=False
                 pass
-            
-
-                continue
-                ## TODO send client movement    
-                ## print "sent to client: " + updatedState
-                #self.request.sendall(updatedState + "\n")
+            ## TODO send client movement    
                     
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -72,14 +61,8 @@ if __name__ == "__main__":
 
     live=True;
     while live:
-    #TODO set server graceful close methods
-    #    if clientMsg=="quit":
-    #        live=False
-    #        print clientMsg
+        #server_thread.join()
         continue
-
-    # TODO use to replace while : server_thread.join()
-
 
     server.shutdown()
     server.server_close()
