@@ -45,7 +45,7 @@ def getNewGameRoom(Game):
     for k in [random.choice(gaLibrary.keys()) for _ in range(NUM_GEN)]:
         y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
         entities.append(gameEntities.gameEntity(gaLibrary[k], y, x))
-    print entities
+    #print entities
     return entities
     ###################################################################
 
