@@ -6,3 +6,4 @@ testing/
 *.pyc
 log.txt
 example.txt
+genColorDict.py

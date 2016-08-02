@@ -3,6 +3,7 @@ import json
 import glob
 import os
 
+
 class ParseAssetError(Exception):
     pass
 
@@ -59,6 +60,7 @@ class GraphicAsset():
     kDeadly = "deadly" #Boolean
     kDrawings = "drawings" #array of arrays of strings
     kColors = "colors" #array of arrays, todo define pattern for declaring, assert same as drawings array
+    kBackColor = "backColors"
 
     def __init__(self, loaded, name):
         self.name = name
@@ -105,6 +107,7 @@ class GraphicAsset():
             if getHitbox(self.height, self.width, d) != self.hitbox:
                 errorString = "hitbox for each drawing must be the same, because server will not know what animation frame is showing on each client"
                 errorString += drawCharacterAndHitbox(self.drawings[0], self.hitbox)
+                errorString += "\n\n"
                 errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
                 raise ParseAssetError(errorString)
 
@@ -142,11 +145,11 @@ def testOneAsset(jsonString):
     try:
         asset = CreateFromJSON(jsonString)
     except ParseAssetError as err:
-        return err
+        return False, str(err)
     else:
         output = "GraphicAssets.py Successfully created asset from JSON\n"
         output += drawCharacterAndHitbox(asset.drawings[0], asset.hitbox)
-        return output
+        return True, str(output)
 
 
 #will return a dictionary of name:assets

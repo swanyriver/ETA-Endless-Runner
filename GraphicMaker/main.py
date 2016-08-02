@@ -16,7 +16,7 @@
 #
 import webapp2
 import json
-import GraphicAssetsSYMLINK
+from GraphicAssetsSYMLINK import testOneAsset, GraphicAsset
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -55,36 +55,36 @@ class MainHandler(webapp2.RequestHandler):
 
     # create graphics JSON from form data
     def post(self):
-        kDRAWING = "drawings"
-        kDEADLY = "deadly"
 
         outputDict = {}
-        outputDict[kDEADLY] = (kDEADLY in self.request.POST)
+        outputDict[GraphicAsset.kDeadly] = (GraphicAsset.kDeadly in self.request.POST)
 
         #uniform pad nonEmpty frames
-        drawings = [MainHandler.uniformDrawing(d.splitlines()) for d in self.request.POST.getall(kDRAWING) if d]
-        #remove empty frames
+        drawings = [MainHandler.uniformDrawing(d.splitlines()) for d in
+                    self.request.POST.getall(GraphicAsset.kDrawings) if d]
+        #remove frames that are empty after uniformDrawing applied
         drawings = filter(None, drawings)
 
-
-        #todo render json in html with option to return to editing including extra frames
-        #todo run parse tests on server and display error/success
-        #todo show game rendering of graphic  (is this even possible??)
-        if drawings:
-            outputDict[kDRAWING] = drawings
-            self.response.headers['Content-Type'] = "application/json"
-
-            #todo put this in a iframe
-            #todo save to temp file for later download
-            jsonOutput = json.dumps(outputDict, indent=2)
-            self.response.write(jsonOutput + "\n")
-
-            self.response.write( "\n" + GraphicAssetsSYMLINK.testOneAsset(jsonOutput))
-
-        else:
+        if not drawings:
             self.response.headers['Content-Type'] = "text/plain"
             self.response.write("Error: drawing must have at least one frame with at least one character")
-        return
+            return
+
+        outputDict[GraphicAsset.kDrawings] = drawings
+
+        jsonOutput = json.dumps(outputDict, indent=2)
+
+        success, msg = testOneAsset(jsonOutput)
+        if not success:
+            self.response.headers['Content-Type'] = "text/plain"
+            self.response.write("Error parsing asset: " + msg)
+            return
+
+        # successful json generation
+        self.response.headers['Content-Type'] = "application/json"
+        self.response.write(jsonOutput)
+
+
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
