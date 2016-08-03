@@ -61,6 +61,14 @@ class GraphicAsset():
     kDrawings = "drawings" #array of arrays of strings
     kColors = "colors" #array of arrays, todo define pattern for declaring, assert same as drawings array
     kBackColor = "backColors"
+    kBlack = "K"
+    kRed = "R"
+    kGreen = "G"
+    kYellow = "Y"
+    kBlue = "B"
+    kMagenta = "M"
+    kCyan = "C"
+    kWhite = "W"
 
     def __init__(self, loaded, name):
         self.name = name

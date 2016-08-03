@@ -1,11 +1,7 @@
-from collections import namedtuple
 import graphicAssets
 import json
 from networkKeys import *
-import time
 
-#todo add color
-Pixel = namedtuple("pixel", ['y', 'x', 'char'])
 
 class gameEntity(object):
     def __init__(self, graphicAsset, y, x):

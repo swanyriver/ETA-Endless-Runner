@@ -1,5 +1,3 @@
-# Proof of concept test for curses based input and output on flip server
-
 import curses
 import time
 from log import log
@@ -7,6 +5,7 @@ import graphicAssets
 import gameEntities
 import json
 from networkKeys import *
+from collections import namedtuple
 
 # Macros for curses magic number functions
 ON = 1
@@ -29,6 +28,16 @@ control_scheme = {
     27:ACTIONS.quit, #escape key
     ord('q'):ACTIONS.quit
 }
+
+cursesColors = [(curses.COLOR_BLACK, graphicAssets.GraphicAsset.kBlack),
+                (curses.COLOR_RED, graphicAssets.GraphicAsset.kRed),
+                (curses.COLOR_GREEN, graphicAssets.GraphicAsset.kGreen),
+                (curses.COLOR_YELLOW, graphicAssets.GraphicAsset.kYellow),
+                (curses.COLOR_BLUE, graphicAssets.GraphicAsset.kBlue),
+                (curses.COLOR_MAGENTA, graphicAssets.GraphicAsset.kMagenta),
+                (curses.COLOR_CYAN, graphicAssets.GraphicAsset.kCyan),
+                (curses.COLOR_WHITE, graphicAssets.GraphicAsset.kWhite)]
+
 
 #simple wrapper around int to keep all animations on same speed
 class TimingClock():
@@ -53,9 +62,13 @@ class TimingClock():
 
 # gamEntity subclass for encapsulating the drawing related methods
 class DrawableEntity(gameEntities.gameEntity):
-    def __init__(self, graphicAsset, y, x, timingClock):
+    # todo add color
+    Pixel = namedtuple("pixel", ['y', 'x', 'char', 'color'])
+
+    def __init__(self, graphicAsset, y, x, timingClock, colorDictionary):
         super(DrawableEntity, self).__init__(graphicAsset, y, x)
 
+        self.colorDict = colorDictionary
         if not len(graphicAsset.drawings) > 1:
             self.getDrawing = self.getDrawingNoAnim
         else:
@@ -77,11 +90,23 @@ class DrawableEntity(gameEntities.gameEntity):
 
 
     #todo add color
+    #todo cache
     def getDrawingFrame(self, frame):
-        return [gameEntities.Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[frame][y][x]))
+
+        #backGroundColor = random.choice(cursesColors)[0]
+        #foregroundColor = random.choice(cursesColors)[0]
+        backGroundColor = "apples"
+        foregroundColor = "bananas"
+
+
+        return [DrawableEntity.Pixel(y + self.y, x + self.x,
+                                     ord(self.graphic.drawings[frame][y][x]),
+                                     curses.color_pair(
+                                         self.colorDict.get((foregroundColor, backGroundColor), 0)))
                 for y in range(self.graphic.height)
                 for x in range(self.graphic.width)
-                if self.graphic.drawings[frame][y][x] != " "]
+                if (y, x) in self.graphic.hitbox
+                ]
 
     def getDrawingNoAnim(self):
         return self.getDrawingFrame(0)
@@ -105,8 +130,8 @@ class DrawableEntity(gameEntities.gameEntity):
 
 #
 class renderPlayer(DrawableEntity):
-    def __init__(self, timingClock):
-        super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock)
+    def __init__(self, timingClock, colorDictionary):
+        super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock, colorDictionary)
         #todo create 2 or 4 way symmetrical drawings for character
         #todo create rotated or flipped drawings of character arrays to load before drawing
         #self.letfFaceDrawing =
@@ -121,13 +146,14 @@ class renderPlayer(DrawableEntity):
 
 
 class gameState():
-    def __init__(self, assets, maxY, maxX):
+    def __init__(self, assets, maxY, maxX, colorDict):
         self.maxX = maxX
         self.maxY = maxY
         self.entities = []
         self.assets = assets
         self.timingClock = TimingClock()
-        self.player = renderPlayer(self.timingClock)
+        self.colorDict = colorDict
+        self.player = renderPlayer(self.timingClock, colorDict)
 
     def newScreen(self, newEntities):
         self.entities = []
@@ -136,7 +162,8 @@ class gameState():
                 y=e['y'],
                 x=e['x'],
                 graphicAsset=self.assets[e['graphicAsset']],
-                timingClock=self.timingClock
+                timingClock=self.timingClock,
+                colorDictionary=self.colorDict
             ))
         #character position is invalidated on new screen
         self.player.setYX(None, None)
@@ -164,6 +191,20 @@ class gameState():
         screen.refresh()
 
 
+def initColors():
+    curses.start_color()
+    colorDict = {(None,None):0}
+    n = 1
+    for fgndColor, fgrndKey in cursesColors:
+        for bkgrndColor, bkgrndKey in cursesColors:
+            curses.init_pair(n, fgndColor, bkgrndColor)
+            colorDict[(fgndColor, bkgrndColor)] = n
+            colorDict[(fgrndKey, bkgrndKey)] = n
+            n += 1
+
+    return colorDict
+
+
 def startCurses():
     screen = curses.initscr()
     curses.noecho()
@@ -171,9 +212,6 @@ def startCurses():
     screen.keypad(ON)
     screen.nodelay(ON)
     curses.curs_set(OFF)
-    curses.start_color()
-    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_YELLOW)
     return screen
 
 
@@ -277,13 +315,14 @@ def constantInputReadLoop(screen, networkPipe, localGame):
 
 def cursesEngine(networkPipe):
     myScreen = startCurses()
+    colorDict = initColors()
 
     #todo determine if terminal is sufficient size for predifined 80 X 24 minus chat window
     maxY, maxX = myScreen.getmaxyx()
 
     #-1 because cant draw on bottom right pixel
     #todo reserve space for chat
-    localGame = gameState(graphicAssets.getAllAssets(), maxY-1, maxX)
+    localGame = gameState(graphicAssets.getAllAssets(), maxY-1, maxX, colorDict)
 
     constantInputReadLoop(myScreen, networkPipe, localGame)
 
