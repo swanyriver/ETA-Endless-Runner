@@ -330,7 +330,7 @@ def cursesEngine(networkPipe):
     myScreen = startCurses()
     colorDict = initColors()
 
-    #todo determine if terminal is sufficient size for predifined 80 X 24 minus chat window
+    #todo determine if terminal is sufficient size for predifined 80 X 24 minus chat window OR just include this spec in readme
     maxY, maxX = myScreen.getmaxyx()
 
     #-1 because cant draw on bottom right pixel
