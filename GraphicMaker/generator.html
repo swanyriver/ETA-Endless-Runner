@@ -15,14 +15,42 @@
         <!-- todo add frame length selector --->
         <!-- todo get last added frame instead of first -->
         <label>Foreground Color</label>
-        <select></select>
+        <select name="color">
+          <option value="W">White (default)</option>
+          <option value="K">Black</option>
+          <option value="R">Red</option>
+          <option value="G">Green</option>
+          <option value="Y">Yellow</option>
+          <option value="B">Blue</option>
+          <option value="M">Magenta</option>
+          <option value="C">Cyan</option>
+        </select>
+        <br>
+        <label>Background Color</label>
+        <select name="backColor">
+          <option value="K">Black (default) </option>
+          <option value="R">Red</option>
+          <option value="G">Green</option>
+          <option value="Y">Yellow</option>
+          <option value="B">Blue</option>
+          <option value="M">Magenta</option>
+          <option value="C">Cyan</option>
+          <option value="W">White</option>
+        </select>
+        <br><br>
     </div>
     <input type="button" value="Add Animation Frame" onclick="
     frames=document.getElementsByClassName('frame');
     lastFrame = frames[frames.length - 1];
+    frgrndColor =lastFrame.getElementsByTagName('select')[0].selectedIndex;
+    bckgndColor =lastFrame.getElementsByTagName('select')[1].selectedIndex;
     document.getElementById('graphicForm').insertBefore(
         lastFrame.cloneNode(true), this
     );
+    frames=document.getElementsByClassName('frame');
+    nextFrame = frames[frames.length - 1];
+    nextFrame.getElementsByTagName('select')[0].selectedIndex = frgrndColor;
+    nextFrame.getElementsByTagName('select')[1].selectedIndex = bckgndColor;
     "> <br> <br>
     <input type="submit" value="Submit">
 </form>

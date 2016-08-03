@@ -80,7 +80,7 @@ class GraphicAsset():
         self.name = name
         self.colorFrames = None
         self.backgroundFrames = None
-        self.category = loaded.get(GraphicAsset.kCategory, None)
+        self.category = loaded.get(GraphicAsset.kCategory, None) or None
         #for k in [GraphicAsset.kDeadly, GraphicAsset.kDrawings, GraphicAsset.kColors]:
         for k in [GraphicAsset.kDeadly, GraphicAsset.kDrawings]:
             if k not in loaded:
