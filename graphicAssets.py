@@ -55,11 +55,17 @@ def getHitbox(height, width, drawing):
     # Htibox may not be contiguous (intended)
     return allPixels.difference(safe)
 
+def stringArrayProperlyFormed(arr, w, h):
+    if type(arr) is not list or len(arr)<h:
+        return False
+    return all((isinstance(line, str) or isinstance(line, unicode)) and len(line) == w for line in arr)
+
 
 class GraphicAsset():
     kDeadly = "deadly" #Boolean
     kDrawings = "drawings" #array of arrays of strings
-    kColors = "colors" #array of arrays, todo define pattern for declaring, assert same as drawings array
+    kCategory = "category"
+    kColors = "colors"
     kBackColor = "backColors"
     kBlack = "K"
     kRed = "R"
@@ -72,6 +78,9 @@ class GraphicAsset():
 
     def __init__(self, loaded, name):
         self.name = name
+        self.colorFrames = None
+        self.backgroundFrames = None
+        self.category = loaded.get(GraphicAsset.kCategory, None)
         #for k in [GraphicAsset.kDeadly, GraphicAsset.kDrawings, GraphicAsset.kColors]:
         for k in [GraphicAsset.kDeadly, GraphicAsset.kDrawings]:
             if k not in loaded:
@@ -109,7 +118,6 @@ class GraphicAsset():
         #detect hitbox on first drawing
         self.hitbox = getHitbox(self.height, self.width, self.drawings[0])
 
-
         #assert hitboxs are same for all drawings
         for d in self.drawings[1:]:
             if getHitbox(self.height, self.width, d) != self.hitbox:
@@ -118,6 +126,23 @@ class GraphicAsset():
                 errorString += "\n\n"
                 errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
                 raise ParseAssetError(errorString)
+
+        #parse color arrays  #forginingly
+        if GraphicAsset.kColors in loaded:
+            if len(loaded[GraphicAsset.kColors]) == len(self.drawings) and \
+                    all(stringArrayProperlyFormed(l, self.width, self.height) for l in loaded[GraphicAsset.kColors]):
+                self.colorFrames = loaded[GraphicAsset.kColors]
+            else:
+                raise ParseAssetError("json file " + GraphicAsset.kColors + " field improperly defined")
+
+        if GraphicAsset.kBackColor in loaded:
+            if len(loaded[GraphicAsset.kBackColor]) == len(self.drawings) and \
+                    all(stringArrayProperlyFormed(l, self.width, self.height) for l in loaded[GraphicAsset.kBackColor]):
+                self.backgroundFrames = loaded[GraphicAsset.kBackColor]
+            else:
+                raise ParseAssetError("json file " + GraphicAsset.kBackColor + " field improperly defined")
+
+
 
 
 
@@ -261,4 +286,4 @@ if __name__ == '__main__':
     else:
         graphics = getAllAssets(debug=True)
         player = getPlayerAsset(debug=True)
-        displayGraphicLibrary(ga=(graphics.values() + [player]))
+        #displayGraphicLibrary(ga=(graphics.values() + [player]))

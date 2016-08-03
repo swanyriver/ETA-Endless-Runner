@@ -6,5 +6,19 @@
      	"|  |",
      	"----"
 	]
-   ]
+   ],
+  "colors": [
+    [
+      "RRRR",
+      "bBBB",
+      "GGGG"
+    ]
+  ],
+  "backColors": [
+    [
+      "RRRB",
+      "KYYY",
+      "-MCC"
+    ]
+  ]
 }

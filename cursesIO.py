@@ -90,6 +90,19 @@ class DrawableEntity(gameEntities.gameEntity):
         #     "drawings: " + "\n".join("\n".join(d) for d in self.graphic.drawings))
 
 
+    def getColorInt(self, frame, y, x):
+        try:
+            return curses.color_pair(self.colorDict.get(
+                (self.graphic.colorFrames[frame][y][x]
+                 if self.graphic.colorFrames else graphicAssets.GraphicAsset.kWhite,
+                 self.graphic.backgroundFrames[frame][y][x]
+                 if self.graphic.backgroundFrames else graphicAssets.GraphicAsset.kBlack), 0))
+        except (IndexError, TypeError):
+            log("(CURSES RENDER ERROR) Error accessing color arrays")
+            # return white on black
+            return curses.color_pair(0)
+
+
     def getDrawingFrame(self, frame):
 
         if self.drawingCache and (self.y, self.x, frame) == self.drawingCache[0]:
@@ -102,8 +115,7 @@ class DrawableEntity(gameEntities.gameEntity):
 
         pixelArray = [DrawableEntity.Pixel(y + self.y, x + self.x,
                                            ord(self.graphic.drawings[frame][y][x]),
-                                           curses.color_pair(
-                                               self.colorDict.get((foregroundColor, backGroundColor), 0)))
+                                           self.getColorInt(frame, y, x))
                       for y in range(self.graphic.height)
                       for x in range(self.graphic.width)
                       if (y, x) in self.graphic.hitbox]
