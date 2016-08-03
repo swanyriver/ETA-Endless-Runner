@@ -8,18 +8,20 @@
 <h2>ETA project Graphics JSON Generator</h2>
 <form id="graphicForm" method="POST">
     <br><input type="checkbox" name="deadly">deadly<br><br>
-    <label>Drawing Frame</label><br>
-    <!-- todo add category box -->
-    <textarea id="drawingInput" rows="17" cols="80" name="drawings"></textarea> <br>
-    <!-- todo add frame length selector --->
-    <!-- todo get last added frame instead of first -->
-    <!-- todo also copy frame length box -->
+    <div class="frame">
+        <label>Drawing Frame</label><br>
+        <!-- todo add category box -->
+        <textarea id="drawingInput" rows="17" cols="80" name="drawings"></textarea> <br>
+        <!-- todo add frame length selector --->
+        <!-- todo get last added frame instead of first -->
+        <label>Foreground Color</label>
+        <select></select>
+    </div>
     <input type="button" value="Add Animation Frame" onclick="
+    frames=document.getElementsByClassName('frame');
+    lastFrame = frames[frames.length - 1];
     document.getElementById('graphicForm').insertBefore(
-        document.getElementById('drawingInput').cloneNode(), this
-    );
-    document.getElementById('graphicForm').insertBefore(
-        document.createElement('br'), this
+        lastFrame.cloneNode(true), this
     );
     "> <br> <br>
     <input type="submit" value="Submit">
