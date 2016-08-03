@@ -243,6 +243,13 @@ def checkForUpdate(recPipe, localGame):
         networkMessage = recPipe.recv()
         if not networkMessage:
             continue
+
+        #intercept chat messages
+        if networkMessage[0] == ACTIONS.chat:
+            #todo handle chat #todo pass neceary param for handling chat
+            log("(CURSES NET-IN CHAT): " + str(networkMessage)[1:] + "\n")
+            return False, None
+
         log("(CURSES NET-IN): " + str(networkMessage) + "\n")
         try:
             networkMessage = json.loads(networkMessage)
@@ -256,7 +263,7 @@ def checkForUpdate(recPipe, localGame):
         #process parsed network message
         #end parsing immediately on game over message
         if kGAMEOVER in networkMessage:
-            return False, networkMessage[kGAMEOVER]
+            return True, networkMessage[kGAMEOVER]
 
         if kSCREEN in networkMessage:
             entitiesArray = networkMessage[kSCREEN]
@@ -280,7 +287,7 @@ def checkForUpdate(recPipe, localGame):
             else:
                 log("(CURSES NET-IN ERROR): player position dict badly formed")
 
-    return True, None
+    return False, None
 
 # input is captured constantly but screen refreshes on interval
 # no-sleep version of process loop
@@ -294,7 +301,7 @@ def constantInputReadLoop(screen, networkPipe, localGame):
 
         # check for message from network
         gameOver, message = checkForUpdate(networkPipe, localGame)
-        if not gameOver:
+        if gameOver:
             log("(CURSES GAMEOVER):%r\n"%message)
             break
 
