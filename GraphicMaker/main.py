@@ -16,7 +16,7 @@
 #
 import webapp2
 import json
-from GraphicAssetsSYMLINK import testOneAsset, GraphicAsset
+from GraphicAssetsSYMLINK import testOneAsset, GraphicAsset, getHitbox
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -53,11 +53,23 @@ class MainHandler(webapp2.RequestHandler):
 
         return drawing
 
+    @staticmethod
+    def createColorArrays(colors, height, width, hb):
+        output = []
+        for c in colors:
+            cgrid = []
+            for y in range(height):
+                cgrid.append("".join(c if (y, x) in hb else " " for x in range(width)))
+            output.append(cgrid)
+        return output
+
     # create graphics JSON from form data
     def post(self):
 
         outputDict = {}
         outputDict[GraphicAsset.kDeadly] = (GraphicAsset.kDeadly in self.request.POST)
+        if GraphicAsset.kCategory in self.request.POST and self.request.POST[GraphicAsset.kCategory] != "":
+            outputDict[GraphicAsset.kCategory] = self.request.POST[GraphicAsset.kCategory]
 
         #uniform pad nonEmpty frames
         drawings = [MainHandler.uniformDrawing(d.splitlines()) for d in
@@ -72,7 +84,27 @@ class MainHandler(webapp2.RequestHandler):
 
         outputDict[GraphicAsset.kDrawings] = drawings
 
+        #todo create color arrays
+        #todo use hb to create color arrays
+        colors = self.request.POST.getall(GraphicAsset.kColors)
+        backColors = self.request.POST.getall(GraphicAsset.kBackColor)
+        try:
+            height = len(drawings[0])
+            width = len(drawings[0][0])
+            hb = getHitbox(height=height, width=width, drawing=drawings[0])
+        except (TypeError, IndexError):
+            self.response.headers['Content-Type'] = "text/plain"
+            self.response.write("Error: Could not create hitbox for drawing (array is probably not properly shaped)")
+            return
+
+        if colors and not all(c==GraphicAsset.kWhite for c in colors):
+            outputDict[GraphicAsset.kColors] = MainHandler.createColorArrays(colors, height, width, hb)
+        if backColors and not all(c==GraphicAsset.kBlack for c in backColors):
+            outputDict[GraphicAsset.kBackColor] = MainHandler.createColorArrays(backColors, height, width, hb)
+
         jsonOutput = json.dumps(outputDict, indent=2)
+
+        print jsonOutput
 
         success, msg = testOneAsset(jsonOutput)
         if not success:

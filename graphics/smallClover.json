@@ -1,0 +1,45 @@
+{
+  "deadly": false, 
+  "backColors": [
+    [
+      "  K  ", 
+      " KKK ", 
+      "KKKKK", 
+      "  K  "
+    ], 
+    [
+      "  G  ", 
+      " GGG ", 
+      "GGGGG", 
+      "  G  "
+    ]
+  ], 
+  "colors": [
+    [
+      "  G  ", 
+      " GGG ", 
+      "GGGGG", 
+      "  G  "
+    ], 
+    [
+      "  W  ", 
+      " WWW ", 
+      "WWWWW", 
+      "  W  "
+    ]
+  ], 
+  "drawings": [
+    [
+      "  _  ", 
+      " ( ) ", 
+      "(_X_)", 
+      "  j  "
+    ], 
+    [
+      "  _  ", 
+      " ( ) ", 
+      "(_X_)", 
+      "  j  "
+    ]
+  ]
+}

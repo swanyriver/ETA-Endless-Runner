@@ -7,6 +7,7 @@
 <body>
 <h2>ETA project Graphics JSON Generator</h2>
 <form id="graphicForm" method="POST">
+    <br><label>Category:</label><input type="text" name="category">
     <br><input type="checkbox" name="deadly">deadly<br><br>
     <div class="frame">
         <label>Drawing Frame</label><br>
@@ -15,7 +16,7 @@
         <!-- todo add frame length selector --->
         <!-- todo get last added frame instead of first -->
         <label>Foreground Color</label>
-        <select name="color">
+        <select name="colors">
           <option value="W">White (default)</option>
           <option value="K">Black</option>
           <option value="R">Red</option>
@@ -27,7 +28,7 @@
         </select>
         <br>
         <label>Background Color</label>
-        <select name="backColor">
+        <select name="backColors">
           <option value="K">Black (default) </option>
           <option value="R">Red</option>
           <option value="G">Green</option>
