@@ -235,7 +235,6 @@ def getPlayerAsset(debug = False):
     if not player:
         raise ParseAssetError("(CRITICAL ERROR): player graphic asset could not be parsed")
 
-    #todo make the return of this function the default param for the player __init__() and render side player entity
     return player
 
 

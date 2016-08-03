@@ -17,7 +17,6 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         serverActive=True
         # self.request is the TCP socket connected to the client
 
-        # todo remove temp dummy server functions
         game = game_state.Gamestate()
         self.request.sendall(game.get_update()+ "\n")
 

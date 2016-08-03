@@ -84,8 +84,6 @@ class MainHandler(webapp2.RequestHandler):
 
         outputDict[GraphicAsset.kDrawings] = drawings
 
-        #todo create color arrays
-        #todo use hb to create color arrays
         colors = self.request.POST.getall(GraphicAsset.kColors)
         backColors = self.request.POST.getall(GraphicAsset.kBackColor)
         try:

@@ -10,7 +10,6 @@ from log import log
 import random
 import time
 
-#TODO currently breaksif newline entered first
 
 ##-- Functions --##
 

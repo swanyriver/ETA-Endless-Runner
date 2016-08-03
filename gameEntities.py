@@ -45,7 +45,7 @@ class gameEntity(object):
     def getWidth(self):
         return self.graphic.width
 
-    #todo (performance) cache delta hitbox, use this method as wrapper to check cache
+    #todo (performance) (only if cached hitmap is not implemented) cache delta hitbox, use this method as wrapper to check cache
     def getDeltaHitbox(self):
         return [(y + self.y, x + self.x) for y, x in self.graphic.hitbox]
 

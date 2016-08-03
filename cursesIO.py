@@ -62,7 +62,6 @@ class TimingClock():
 
 # gamEntity subclass for encapsulating the drawing related methods
 class DrawableEntity(gameEntities.gameEntity):
-    # todo add color
     Pixel = namedtuple("pixel", ['y', 'x', 'char', 'color'])
 
     def __init__(self, graphicAsset, y, x, timingClock, colorDictionary):
@@ -78,9 +77,6 @@ class DrawableEntity(gameEntities.gameEntity):
         self.colorDict = colorDictionary
         self.drawingCache = None
 
-        #todo add these attributes to graphicAsset
-        #todo add these assets to Graphics maker applet
-        #todo add these assets to GraphicsAssets jsonPaser
         self.frameDurations = [1] * len(self.graphic.drawings)
         self.totalDuration = sum(self.frameDurations) * self.timingClock.tick
 
@@ -107,11 +103,6 @@ class DrawableEntity(gameEntities.gameEntity):
 
         if self.drawingCache and (self.y, self.x, frame) == self.drawingCache[0]:
             return self.drawingCache[1]
-
-        #todo replace with real colors
-        import random
-        backGroundColor = random.choice(cursesColors)[0]
-        foregroundColor = random.choice(cursesColors)[0]
 
         pixelArray = [DrawableEntity.Pixel(y + self.y, x + self.x,
                                            ord(self.graphic.drawings[frame][y][x]),
