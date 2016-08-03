@@ -68,7 +68,6 @@ class DrawableEntity(gameEntities.gameEntity):
     def __init__(self, graphicAsset, y, x, timingClock, colorDictionary):
         super(DrawableEntity, self).__init__(graphicAsset, y, x)
 
-        self.colorDict = colorDictionary
         if not len(graphicAsset.drawings) > 1:
             self.getDrawing = self.getDrawingNoAnim
         else:
@@ -76,6 +75,8 @@ class DrawableEntity(gameEntities.gameEntity):
             self.lastFrameTime = time.time()
 
         self.timingClock = timingClock
+        self.colorDict = colorDictionary
+        self.drawingCache = None
 
         #todo add these attributes to graphicAsset
         #todo add these assets to Graphics maker applet
@@ -89,24 +90,26 @@ class DrawableEntity(gameEntities.gameEntity):
         #     "drawings: " + "\n".join("\n".join(d) for d in self.graphic.drawings))
 
 
-    #todo add color
-    #todo cache
     def getDrawingFrame(self, frame):
 
-        #backGroundColor = random.choice(cursesColors)[0]
-        #foregroundColor = random.choice(cursesColors)[0]
-        backGroundColor = "apples"
-        foregroundColor = "bananas"
+        if self.drawingCache and (self.y, self.x, frame) == self.drawingCache[0]:
+            return self.drawingCache[1]
 
+        #todo replace with real colors
+        import random
+        backGroundColor = random.choice(cursesColors)[0]
+        foregroundColor = random.choice(cursesColors)[0]
 
-        return [DrawableEntity.Pixel(y + self.y, x + self.x,
-                                     ord(self.graphic.drawings[frame][y][x]),
-                                     curses.color_pair(
-                                         self.colorDict.get((foregroundColor, backGroundColor), 0)))
-                for y in range(self.graphic.height)
-                for x in range(self.graphic.width)
-                if (y, x) in self.graphic.hitbox
-                ]
+        pixelArray = [DrawableEntity.Pixel(y + self.y, x + self.x,
+                                           ord(self.graphic.drawings[frame][y][x]),
+                                           curses.color_pair(
+                                               self.colorDict.get((foregroundColor, backGroundColor), 0)))
+                      for y in range(self.graphic.height)
+                      for x in range(self.graphic.width)
+                      if (y, x) in self.graphic.hitbox]
+        self.drawingCache = ( (self.y, self.x, frame), pixelArray)
+        return pixelArray
+
 
     def getDrawingNoAnim(self):
         return self.getDrawingFrame(0)
