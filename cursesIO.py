@@ -13,7 +13,8 @@ OFF = 0
 
 SCREEN_REFRESH = .05 # 20FPS
 TICK = .5            # starting frequency of frame transitions for animation,  half second
-
+GAMEWINDOW_ROWS = 20
+GAMEWINDOW_COLS = 80
 
 # int to int, mapping keyboard key to action enum
 control_scheme = {
@@ -80,11 +81,6 @@ class DrawableEntity(gameEntities.gameEntity):
         self.frameDurations = [1] * len(self.graphic.drawings)
         self.totalDuration = sum(self.frameDurations) * self.timingClock.tick
 
-        # DEBUG log for instantiating animated drawings
-        # log("DRAW INSTANCE:" + str(graphicAsset.name) + "\n" + "num frames:%d"%len(self.graphic.drawings) +
-        #     "\ntimings:%s\n"%str(self.frameDurations) +
-        #     "drawings: " + "\n".join("\n".join(d) for d in self.graphic.drawings))
-
 
     def getColorInt(self, frame, y, x):
         try:
@@ -110,7 +106,7 @@ class DrawableEntity(gameEntities.gameEntity):
                       for y in range(self.graphic.height)
                       for x in range(self.graphic.width)
                       if (y, x) in self.graphic.hitbox]
-        self.drawingCache = ( (self.y, self.x, frame), pixelArray)
+        self.drawingCache = ((self.y, self.x, frame), pixelArray)
         return pixelArray
 
 
@@ -128,13 +124,9 @@ class DrawableEntity(gameEntities.gameEntity):
             self.currentFrame = (self.currentFrame + 1) % len(self.graphic.drawings)
             self.lastFrameTime = self.timingClock.getTime()
 
-            # debug log for animation transition
-            # log(str(self) + "Advanced frame to frame %d/%d\n"%(self.currentFrame, len(self.graphic.drawings)) +
-            #     "\n".join(self.graphic.drawings[self.currentFrame]) + "\n")
-
         return self.getDrawingFrame(self.currentFrame)
 
-#
+
 class renderPlayer(DrawableEntity):
     def __init__(self, timingClock, colorDictionary):
         super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock, colorDictionary)
@@ -183,7 +175,11 @@ class gameState():
     def drawEntity(self, entity, screen):
         for pixel in filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX,
                             entity.getDrawing()):
-            screen.addch(*pixel)
+            try:
+                screen.addch(*pixel)
+            except curses.error:
+                # curses raises a superfulous error when drawing on the bottom right char of a subdivided window
+                pass
 
     def render(self, screen):
         screen.erase()
@@ -291,7 +287,7 @@ def checkForUpdate(recPipe, localGame):
 
 # input is captured constantly but screen refreshes on interval
 # no-sleep version of process loop
-def constantInputReadLoop(screen, networkPipe, localGame):
+def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
     log("constant input loop initiated\n")
 
     lastRefresh = 0
@@ -308,10 +304,10 @@ def constantInputReadLoop(screen, networkPipe, localGame):
         # redraw game state acording to frame rate
         if time.time() - lastRefresh > SCREEN_REFRESH:
             lastRefresh = time.time()
-            localGame.render(screen)
+            localGame.render(gameWindow)
 
         # gather input from keyboard and transmit to network if appropriate
-        char_in = screen.getch()
+        char_in = gameWindow.getch()
         if char_in != curses.ERR:
             # log("input: %r %s %r\n" %
             #                  (char_in, chr(char_in) if 0 <= char_in < 256 else "{Non Ascii}",
@@ -326,18 +322,33 @@ def constantInputReadLoop(screen, networkPipe, localGame):
                 break
 
 
+class ChatManager():
+    def __init__(self, chatDisplayWindow, chatEntryLine, colorDict):
+        self.chatEntryLine = chatEntryLine
+        self.chatDisplayWindow = chatDisplayWindow
+        self.COLOR = curses.color_pair(colorDict[(curses.COLOR_WHITE, curses.COLOR_MAGENTA)])
+        maxy, maxx = chatDisplayWindow.getmaxyx()
+        for y in range(maxy):
+            try:
+                self.chatDisplayWindow.addstr(y, 0, " " * (maxx), self.COLOR)
+            except curses.error:
+                pass
+        self.chatDisplayWindow.refresh()
+
+
 def cursesEngine(networkPipe):
-    myScreen = startCurses()
+    gameWindow = startCurses()
     colorDict = initColors()
 
-    #todo determine if terminal is sufficient size for predifined 80 X 24 minus chat window OR just include this spec in readme
-    maxY, maxX = myScreen.getmaxyx()
+    gameWindow.resize(GAMEWINDOW_ROWS, GAMEWINDOW_COLS)
+    chatDisplayWindow = curses.newwin(3, 80, 20, 0)
+    chatEntryLine = curses.newwin(1, 79, 23, 0)
+    chatMan = ChatManager(chatDisplayWindow, chatEntryLine, colorDict)
 
-    #-1 because cant draw on bottom right pixel
-    #todo reserve space for chat
-    localGame = gameState(graphicAssets.getAllAssets(), maxY-1, maxX, colorDict)
+    localGame = gameState(graphicAssets.getAllAssets(), GAMEWINDOW_ROWS, GAMEWINDOW_COLS, colorDict)
 
-    constantInputReadLoop(myScreen, networkPipe, localGame)
+    constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan)
 
-    exitCurses(myScreen)
+    exitCurses(gameWindow)
     log("(CURSES): curses screen exited\n")
+
