@@ -293,6 +293,7 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
     log("constant input loop initiated\n")
 
     lastRefresh = 0
+    isTypingChatMessage = False
 
     while True:
         ### primary input and output loop ###
@@ -317,11 +318,21 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
 
             # todo switch to chat input method if / char is pressed
 
-            respondToInput(char_in, networkPipe)
+            if isTypingChatMessage:
+                isTypingChatMessage, msg = chatMan.newChatCharInput(char_in)
+                if not isTypingChatMessage and msg and msg:
+                    networkPipe.send(msg)
 
-            if control_scheme.get(char_in) == ACTIONS.quit:
-                log("(CURSES GAMEOVER):%s\n" % "this client pressed quit")
-                break
+            else:
+                if char_in == ord(ACTIONS.chat):
+                    isTypingChatMessage = True
+                    chatMan.newChatCharInput(char_in)
+                else:
+                    respondToInput(char_in, networkPipe)
+
+                    if control_scheme.get(char_in) == ACTIONS.quit:
+                        log("(CURSES GAMEOVER):%s\n" % "this client pressed quit")
+                        break
 
 
 class ChatManager():
@@ -332,6 +343,11 @@ class ChatManager():
         self.chatDisplayLines, self.width = chatDisplayWindow.getmaxyx()
         self.chatMessages = []
         self.updateChatDisplay()
+        self.chatCompose = []
+        self.ESCAPE_KEY = 27
+        self.RETURN_KEY = 10
+        self.PRINTABLE_MIN = 32
+        self.PRINTABLE_MAX = 127
 
     def updateChatDisplay(self):
         self.chatDisplayWindow.erase()
@@ -346,6 +362,46 @@ class ChatManager():
         #todo provide way to view old messages, or trim array
         self.chatMessages.append(msg)
         self.updateChatDisplay()
+
+    # retunrs (chat still in progress T/F, msg)
+    def newChatCharInput(self, char_in_num):
+
+        log("(CHAT IN) %d\n"%char_in_num)
+
+        if char_in_num == self.ESCAPE_KEY:
+            self.chatCompose = []
+            self.chatEntryLine.erase()
+            self.chatEntryLine.refresh()
+            return False, None
+
+        if char_in_num == curses.KEY_ENTER or char_in_num == self.RETURN_KEY:
+            self.chatCompose.append("\n")
+            msg = "".join(self.chatCompose)
+            self.chatCompose = []
+            self.chatEntryLine.erase()
+            self.chatEntryLine.refresh()
+            return False, (msg if len(msg) > 2 else None)
+
+        if char_in_num == curses.KEY_BACKSPACE:
+            self.chatCompose.pop()
+            try:
+                self.chatEntryLine.addch(0,len(self.chatCompose), " ")
+            except curses.error:
+                pass
+            self.chatEntryLine.refresh()
+            #exit chat if all characters deleted
+            return len(self.chatCompose) > 0, None
+
+        if self.PRINTABLE_MIN <= char_in_num <= self.PRINTABLE_MAX and len(self.chatCompose) < self.width-1:
+            self.chatCompose.append(chr(char_in_num))
+            try:
+                self.chatEntryLine.addch(0, len(self.chatCompose)-1, chr(char_in_num))
+            except curses.error:
+                pass
+            self.chatEntryLine.refresh()
+
+        return True, None
+
 
 
 def cursesEngine(networkPipe):
