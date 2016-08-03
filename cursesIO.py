@@ -6,6 +6,7 @@ import gameEntities
 import json
 from networkKeys import *
 from collections import namedtuple
+from itertools import izip_longest
 
 # Macros for curses magic number functions
 ON = 1
@@ -233,7 +234,7 @@ def respondToInput(in_char_num, sendpipe):
         sendpipe.send(action)
 
 
-def checkForUpdate(recPipe, localGame):
+def checkForUpdate(recPipe, localGame, chatMan):
 
     while recPipe.poll():
         networkMessage = recPipe.recv()
@@ -242,8 +243,9 @@ def checkForUpdate(recPipe, localGame):
 
         #intercept chat messages
         if networkMessage[0] == ACTIONS.chat:
-            #todo handle chat #todo pass neceary param for handling chat
+            networkMessage = networkMessage.replace("\n", "")
             log("(CURSES NET-IN CHAT): " + str(networkMessage)[1:] + "\n")
+            chatMan.newChatMessage(networkMessage[1:])
             return False, None
 
         log("(CURSES NET-IN): " + str(networkMessage) + "\n")
@@ -296,7 +298,7 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
         ### primary input and output loop ###
 
         # check for message from network
-        gameOver, message = checkForUpdate(networkPipe, localGame)
+        gameOver, message = checkForUpdate(networkPipe, localGame, chatMan)
         if gameOver:
             log("(CURSES GAMEOVER):%r\n"%message)
             break
@@ -327,13 +329,23 @@ class ChatManager():
         self.chatEntryLine = chatEntryLine
         self.chatDisplayWindow = chatDisplayWindow
         self.COLOR = curses.color_pair(colorDict[(curses.COLOR_WHITE, curses.COLOR_MAGENTA)])
-        maxy, maxx = chatDisplayWindow.getmaxyx()
-        for y in range(maxy):
+        self.chatDisplayLines, self.width = chatDisplayWindow.getmaxyx()
+        self.chatMessages = []
+        self.updateChatDisplay()
+
+    def updateChatDisplay(self):
+        self.chatDisplayWindow.erase()
+        for y, msg in izip_longest(range(self.chatDisplayLines), self.chatMessages[-self.chatDisplayLines:], fillvalue=""):
             try:
-                self.chatDisplayWindow.addstr(y, 0, " " * (maxx), self.COLOR)
+                self.chatDisplayWindow.addstr(y, 0, msg + " " * (self.width - len(msg)), self.COLOR)
             except curses.error:
                 pass
         self.chatDisplayWindow.refresh()
+
+    def newChatMessage(self, msg):
+        #todo provide way to view old messages, or trim array
+        self.chatMessages.append(msg)
+        self.updateChatDisplay()
 
 
 def cursesEngine(networkPipe):

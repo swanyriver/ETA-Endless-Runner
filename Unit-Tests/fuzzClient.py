@@ -28,6 +28,8 @@ def main(argv):
     #0-1 Larger percent means connected sockets send messages more often
     #    larger percent means more likeley that multiple messages will be sent from different clients at near same time
     BIAS = .7
+    #raio of action to chat
+    RATIO = 3
 
     #--connect to server--#
     #create sock stream and connect
@@ -37,7 +39,7 @@ def main(argv):
         s.connect((TCP_IP, TCP_PORT))
         s.settimeout(.2)
 
-    actions = list("wasd" * 5) + ["/hey there other player", "/yeah go that way", "/good job", "/oh watchout"]
+    actions = list("wasd" * RATIO) + ["/hey there other player", "/yeah go that way", "/good job", "/oh watchout"]
 
     lastSend = 0
 
