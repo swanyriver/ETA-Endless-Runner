@@ -40,11 +40,21 @@ def getNewGameRoom(Game):
     #todo replace this random gen code with real code
     ###################################################################
     gaLibrary = Game.gaLibrary
-    NUM_GEN = 4
+    NUM_GEN = 2
     entities = []
-    for k in [random.choice(gaLibrary.keys()) for _ in range(NUM_GEN)]:
+    # for k in [random.choice(gaLibrary.keys()) for _ in range(NUM_GEN)]:
+    #     y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
+    #     entities.append(gameEntities.gameEntity(gaLibrary[k], y, x))
+    hazards = Game.gaLibrary.getAllBadGuys()
+    decor = Game.gaLibrary.getAllDecorations()
+    for _ in range(NUM_GEN):
         y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
-        entities.append(gameEntities.gameEntity(gaLibrary[k], y, x))
+        entities.append(gameEntities.gameEntity(random.choice(hazards), y, x))
+
+    for _ in range(NUM_GEN):
+        y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
+        entities.append(gameEntities.gameEntity(random.choice(decor), y, x))
+
     #print entities
     return entities
     ###################################################################

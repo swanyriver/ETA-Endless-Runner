@@ -8,6 +8,27 @@ class ParseAssetError(Exception):
     pass
 
 
+class GraphicsLibrary(dict):
+    def __init__(self, d):
+        super(GraphicsLibrary, self).__init__(d)
+        self.categories = list(set(g.category for g in self.values()))
+
+    def getCategories(self):
+        return self.categories
+
+    def getAllDecorations(self):
+        return [g for g in self.values() if not g.deadly]
+
+    def getAllBadGuys(self):
+        return [g for g in self.values() if g.deadly]
+
+    def getDecorations(self, category):
+        return [g for g in self.values() if not g.deadly and g.category == category]
+
+    def getBadGuys(self, category):
+        return [g for g in self.values() if g.deadly and g.category == category]
+
+
 #debugging method
 def drawCharacterAndHitbox(drawing, hitbox):
 
@@ -218,7 +239,7 @@ def getAllAssets(debug = False):
                 else "None of the %d asset files were properly formatted"%len(getAssetFileNames()))
         raise ParseAssetError(errorString)
 
-    return graphicAssets
+    return GraphicsLibrary(graphicAssets)
 
 
 def getPlayerAsset(debug = False):
