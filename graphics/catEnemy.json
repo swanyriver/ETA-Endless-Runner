@@ -1,0 +1,28 @@
+{
+  "category": "catEnemy", 
+  "deadly": true, 
+  "colors": [
+    [
+      "  Y Y  ", 
+      "YYYYYYY", 
+      " YYYYY ", 
+      "YYYYYYY"
+    ]
+  ], 
+  "backColors": [
+    [
+      "  R R  ", 
+      "RRRRRRR", 
+      " RRRRR ", 
+      "RRRRRRR"
+    ]
+  ], 
+  "drawings": [
+    [
+      "  ^ ^  ", 
+      ">('-')<", 
+      " /   \\ ", 
+      "======="
+    ]
+  ]
+}

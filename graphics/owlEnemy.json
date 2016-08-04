@@ -1,0 +1,40 @@
+{
+  "category": "owlEnemy", 
+  "deadly": true, 
+  "colors": [
+    [
+      " K K ", 
+      "KKKKK", 
+      " K K "
+    ], 
+    [
+      " K K ", 
+      "KKKKK", 
+      " K K "
+    ]
+  ], 
+  "backColors": [
+    [
+      " R R ", 
+      "RRRRR", 
+      " R R "
+    ], 
+    [
+      " R R ", 
+      "RRRRR", 
+      " R R "
+    ]
+  ], 
+  "drawings": [
+    [
+      " \\ / ", 
+      "/0v0\\", 
+      " \\ / "
+    ], 
+    [
+      " \\ / ", 
+      "\\0v0/", 
+      " \\ / "
+    ]
+  ]
+}
