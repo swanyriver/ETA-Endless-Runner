@@ -1,0 +1,24 @@
+{
+  "category": "snow", 
+  "deadly": false, 
+  "backColors": [
+    [
+      "B ", 
+      " B"
+    ], 
+    [
+      "B ", 
+      " B"
+    ]
+  ], 
+  "drawings": [
+    [
+      "* ", 
+      " *"
+    ], 
+    [
+      "* ", 
+      " *"
+    ]
+  ]
+}

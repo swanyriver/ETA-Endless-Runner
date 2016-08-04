@@ -1,0 +1,25 @@
+{
+  "category": "snowManEnemy", 
+  "deadly": true, 
+  "colors": [
+    [
+      " RRR ", 
+      "RRRRR", 
+      " R R "
+    ]
+  ], 
+  "backColors": [
+    [
+      " WWW ", 
+      "WWWWW", 
+      " W W "
+    ]
+  ], 
+  "drawings": [
+    [
+      " (%) ", 
+      "-(:)-", 
+      " ( ) "
+    ]
+  ]
+}

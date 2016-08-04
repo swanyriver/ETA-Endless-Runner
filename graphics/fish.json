@@ -1,0 +1,19 @@
+{
+  "category": "Fish", 
+  "deadly": false, 
+  "colors": [
+    [
+      "GGGGGG"
+    ]
+  ], 
+  "backColors": [
+    [
+      "CCCCCC"
+    ]
+  ], 
+  "drawings": [
+    [
+      "><}}}>"
+    ]
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "category": "batEnemy", 
+  "deadly": true, 
+  "colors": [
+    [
+      "KKKKK"
+    ], 
+    [
+      "KKKKK"
+    ]
+  ], 
+  "backColors": [
+    [
+      "RRRRR"
+    ], 
+    [
+      "RRRRR"
+    ]
+  ], 
+  "drawings": [
+    [
+      "/'v'\\"
+    ], 
+    [
+      "^'v'^"
+    ]
+  ]
+}

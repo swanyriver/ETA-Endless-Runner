@@ -1,12 +1,13 @@
 import sys
 import json
-import os
 import glob
+import os
 
 class ParseAssetError(Exception):
     pass
 
-#debuggin method
+
+#debugging method
 def drawCharacterAndHitbox(drawing, hitbox):
 
     #convert hitbox to 2d array
@@ -18,36 +19,40 @@ def drawCharacterAndHitbox(drawing, hitbox):
     return hitboxstring
 
 
+def getNeighborTuples(y,x):
+    return [
+        (y-1, x), (y+1, x),
+        (y, x-1), (y, x+1)
+    ]
+
+
 def getHitbox(height, width, drawing):
-    hitbox = set([(y, x) for y in range(height) for x in range(width)])
-    # send probes from outer edge removing cords from hitbox
-    # top to bottom
-    for y in range(height):
-        for x in range(width):
-            if drawing[y][x] == " " and (y,x) in hitbox:
-                hitbox.remove((y,x))
-            else:
-                break
-        for x in reversed(range(width)):
-            if drawing[y][x] == " " and (y, x) in hitbox:
-                hitbox.remove((y, x))
-            else:
-                break
+    # FloodFill algorithm for defining drawings hitbox
+    allPixels = set([(y, x) for y in range(height) for x in range(width)])
 
-    # left to right
-    for x in range(width):
-        for y in range(height):
-            if drawing[y][x] == " " and (y, x) in hitbox:
-                hitbox.remove((y, x))
-            else:
-                break
-        for y in reversed(range(height)):
-            if drawing[y][x] == " " and (y, x) in hitbox:
-                hitbox.remove((y, x))
-            else:
-                break
+    safe = set(
+        [(-1,x) for x in range(width)] +
+        [(height,x) for x in range(width)] +
+        [(y, -1) for y in range(height)] +
+        [(y, width) for y in range(height)]
+    )
 
-    return hitbox
+    search = set(safe)
+
+    while search:
+        n = search.pop()
+        neighbors = [(y,x) for y,x in getNeighborTuples(*n) if
+                     0 <= y < height and 0 <= x < width and
+                     drawing[y][x] == " " and
+                     (y,x) not in safe]
+
+        safe.update(neighbors)
+        search.update(neighbors)
+
+    # after flood fill all reachable space characters are marked safe, hitbox will be remaining
+    # Htibox may include enclosed space characters (intended)
+    # Htibox may not be contiguous (intended)
+    return allPixels.difference(safe)
 
 
 class GraphicAsset():
@@ -80,12 +85,16 @@ class GraphicAsset():
             if not isinstance(d, list):
                 raise ParseAssetError("drawings must contain arrays of strings")
             if len(d) != self.height:
-                raise ParseAssetError("drawings must be the same height")
+                errorString = "drawings must be the same height, heights:" + str([len(d) for d in self.drawings]) + '\n'
+                raise ParseAssetError(errorString)
             for s in d:
                 if not (isinstance(s, str) or isinstance(s, unicode)):
                     raise ParseAssetError("drawings must contain arrays of strings")
                 if len(s) != self.width:
-                    raise ParseAssetError("each line of drawing must be the same width")
+                    errorString = "each line of drawing must be the same width, lineWidths:%s\n"%str([len(line) for line in d]) \
+                                  + '\n'.join(d)
+                    raise ParseAssetError(errorString)
+
 
         #detect hitbox on first drawing
         self.hitbox = getHitbox(self.height, self.width, self.drawings[0])
@@ -99,39 +108,146 @@ class GraphicAsset():
                 errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
                 raise ParseAssetError(errorString)
 
-    def __repr__(self):
-        return "height:"
+
+
+#returns one graphic asset instance, primarily for debugging, game should use factory method getAllAssets()
+# used for web app testing of generated JSON over html interface
+def CreateFromJSON(jsonString, name=None):
+    try:
+        data = json.loads(jsonString)
+    except ValueError as e:
+        raise ParseAssetError("failed to decode asset from json string\n" + str(e))
+    asset = GraphicAsset(data, name)
+    return asset
+
+
+def createFromFileName(filename, debug=False):
+    name = filename.split("/")[-1]
+    name = name.split(".")[0]
+    with open(filename, 'r') as assetFile:
+        try:
+            data = json.load(assetFile)
+        except ValueError:
+            if debug: print filename, " failed to decode json from file"
+            return None
+        try:
+            asset = GraphicAsset(data, name)
+            return asset
+        except ParseAssetError as err:
+            if debug: print filename, " failed to construct: ", err
+            return None
+
+
+def testOneAsset(jsonString):
+    try:
+        asset = CreateFromJSON(jsonString)
+    except ParseAssetError as err:
+        return err
+    else:
+        output = "GraphicAssets.py Successfully created asset from JSON\n"
+        output += drawCharacterAndHitbox(asset.drawings[0], asset.hitbox)
+        return output
+
 
 #will return a dictionary of name:assets
+DIRECTORY = "graphics"
+FILE_TYPE = ".json"
+
+
+def getAssetFileNames():
+    return glob.glob("%s/*%s"%(DIRECTORY, FILE_TYPE))
+
+
 def getAllAssets(debug = False):
 
-    graphicAssets = {}
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype:dict[str, GraphicAsset]
+    """
 
-    for f in glob.glob("graphics/*.json"):
-        name = f.split("/")[-1]
-        name = name.split(".")[0]
-        with open(f, 'r') as assetFile:
-            try:
-                data = json.load(assetFile)
-            except ValueError:
-                if debug: print f, " failed to decode json"
-                continue
-            try:
-                asset = GraphicAsset(data, name)
-                graphicAssets[name] = asset
-            except ParseAssetError as err:
-                if debug: print f, " failed to construct: ", err
+    graphicAssets = {g.name:g for g in
+                     filter(None, (
+                         createFromFileName(f, debug=debug) for f in getAssetFileNames()
+                        ))
+                     }
 
     if debug:
         print "%d assets parsed from files"%len(graphicAssets)
         print graphicAssets.keys()
 
+    if not graphicAssets:
+        errorString = "(CRITICAL ERROR): Graphic Library is empty CAUSE: " + \
+            ("No %s files available in /%s folder or no %s folder"%(FILE_TYPE, DIRECTORY, DIRECTORY)
+                if not getAssetFileNames()
+                else "None of the %d asset files were properly formatted"%len(getAssetFileNames()))
+        raise ParseAssetError(errorString)
+
     return graphicAssets
 
 
+def getPlayerAsset(debug = False):
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype: GraphicAsset
+    """
+    PLAYER_FILE_LOC = DIRECTORY + "/reserved/player" + FILE_TYPE
+    if not os.path.isfile(PLAYER_FILE_LOC):
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset not present at: %s"%PLAYER_FILE_LOC)
+
+    player = createFromFileName(PLAYER_FILE_LOC)
+
+    if not player:
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset could not be parsed")
+
+    #todo make the return of this function the default param for the player __init__() and render side player entity
+    return player
+
+
+def displayGraphicLibrary(ga=None):
+    ga = ga or getAllAssets().values() + [getPlayerAsset()]
+
+    print "\n\n------------------------------------------"
+    print "--------- FULL GRAPHICS LIBRARY ----------"
+    print "------------------------------------------"
+
+    for g in ga:
+        print "Asset: %s    H:%d  W:%d" % (g.name, g.height, g.width), "  <DEADLY>" if g.deadly else ""
+        print "\nDRAWING AND HIBOX:"
+        print drawCharacterAndHitbox(g.drawings[0], g.hitbox)
+
+        if len(g.drawings) > 1:
+            print "\nANIMATION FRAMES:\n"
+            PADDING = 4
+            perRow = 80 // (g.width + PADDING)
+
+            leftIndex = 0
+            rightIndex = 0
+            while rightIndex < len(g.drawings):
+                rightIndex += perRow
+                leftIndex = rightIndex - perRow
+
+                for row in range(g.height):
+                    print (" " * PADDING).join(
+                        g.drawings[frame][row] for frame in range(leftIndex, min(rightIndex, len(g.drawings)))
+                    )
+                print ""
+
+        print "--------------------------------------"
+        print "--------------------------------------"
+
+
+
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
+
+    if "-d" in sys.argv or "-display" in sys.argv:
+        displayGraphicLibrary()
+        exit()
+
+    elif "-f" in sys.argv and len(sys.argv) > sys.argv.index("-f"):
+        print "testing file %s"%sys.argv[sys.argv.index("-f") + 1]
         pass
         #todo read and display one asset in curses, with color and hitbox
     else:
-        getAllAssets(debug=True)
+        graphics = getAllAssets(debug=True)
+        player = getPlayerAsset(debug=True)
+        displayGraphicLibrary(ga=(graphics.values() + [player]))

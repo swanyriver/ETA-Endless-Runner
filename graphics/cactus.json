@@ -1,0 +1,25 @@
+{
+  "category": "cactus", 
+  "deadly": true, 
+  "colors": [
+    [
+      "GGGG", 
+      "GGGG", 
+      "GGGG"
+    ]
+  ], 
+  "backColors": [
+    [
+      "YYYY", 
+      "YYYY", 
+      "YYYY"
+    ]
+  ], 
+  "drawings": [
+    [
+      ">()<", 
+      ">()<", 
+      ">()<"
+    ]
+  ]
+}

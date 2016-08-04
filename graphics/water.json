@@ -1,0 +1,58 @@
+{
+  "category": "Water", 
+  "deadly": false, 
+  "colors": [
+    [
+      "BBB", 
+      "BBB"
+    ], 
+    [
+      "BBB", 
+      "BBB"
+    ], 
+    [
+      "BBB", 
+      "BBB"
+    ], 
+    [
+      "BBB", 
+      "BBB"
+    ]
+  ], 
+  "backColors": [
+    [
+      "CCC", 
+      "CCC"
+    ], 
+    [
+      "CCC", 
+      "CCC"
+    ], 
+    [
+      "CCC", 
+      "CCC"
+    ], 
+    [
+      "CCC", 
+      "CCC"
+    ]
+  ], 
+  "drawings": [
+    [
+      "~~~", 
+      "~~~"
+    ], 
+    [
+      "~~~", 
+      "^~~"
+    ], 
+    [
+      "~~~", 
+      "~^~"
+    ], 
+    [
+      "~~~", 
+      "~~^"
+    ]
+  ]
+}

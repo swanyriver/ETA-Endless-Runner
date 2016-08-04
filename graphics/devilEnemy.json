@@ -1,0 +1,25 @@
+{
+  "category": "devilEnemy", 
+  "deadly": true, 
+  "colors": [
+    [
+      "M M ", 
+      "MMMM", 
+      "  M "
+    ]
+  ], 
+  "backColors": [
+    [
+      "R R ", 
+      "RRRR", 
+      "  R "
+    ]
+  ], 
+  "drawings": [
+    [
+      "^ @ ", 
+      "|-|-", 
+      "  ^ "
+    ]
+  ]
+}

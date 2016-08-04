@@ -1,0 +1,18 @@
+{
+  "category": "BrickWall", 
+  "deadly": false, 
+  "backColors": [
+    [
+      "RRRRRRRRR", 
+      "RRRRRRRRR", 
+      "RRRRRRRRR"
+    ]
+  ], 
+  "drawings": [
+    [
+      "_________", 
+      "[_][_][_]", 
+      "[_][_][_]"
+    ]
+  ]
+}
