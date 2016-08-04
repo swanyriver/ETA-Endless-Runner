@@ -363,6 +363,18 @@ class ChatManager():
         self.chatMessages.append(msg)
         self.updateChatDisplay()
 
+
+    def _displayChatCursor(self):
+        try:
+            #erase old char after backspace
+            self.chatEntryLine.addch(0, len(self.chatCompose)+1, " ")
+        except curses.error:
+            pass
+        try:
+            self.chatEntryLine.addch(0, len(self.chatCompose), "_", curses.A_BLINK | curses.A_REVERSE)
+        except curses.error:
+            pass
+
     # retunrs (chat still in progress T/F, msg)
     def newChatCharInput(self, char_in_num):
 
@@ -384,10 +396,10 @@ class ChatManager():
 
         if char_in_num == curses.KEY_BACKSPACE:
             self.chatCompose.pop()
-            try:
-                self.chatEntryLine.addch(0,len(self.chatCompose), " ")
-            except curses.error:
-                pass
+            if len(self.chatCompose):
+                self._displayChatCursor()
+            else:
+                self.chatEntryLine.erase()
             self.chatEntryLine.refresh()
             #exit chat if all characters deleted
             return len(self.chatCompose) > 0, None
@@ -396,6 +408,7 @@ class ChatManager():
             self.chatCompose.append(chr(char_in_num))
             try:
                 self.chatEntryLine.addch(0, len(self.chatCompose)-1, chr(char_in_num))
+                self._displayChatCursor()
             except curses.error:
                 pass
             self.chatEntryLine.refresh()
