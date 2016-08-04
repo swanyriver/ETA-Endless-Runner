@@ -1,0 +1,22 @@
+{
+  "category": "Flower", 
+  "deadly": false, 
+  "colors": [
+    [
+      "R R ", 
+      "GGGG"
+    ]
+  ], 
+  "backColors": [
+    [
+      "C C ", 
+      "CCCC"
+    ]
+  ], 
+  "drawings": [
+    [
+      "@ @ ", 
+      "|,|,"
+    ]
+  ]
+}
