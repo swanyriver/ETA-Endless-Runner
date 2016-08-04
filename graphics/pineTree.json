@@ -1,0 +1,20 @@
+{
+  "category": "pineTree", 
+  "deadly": false, 
+  "colors": [
+    [
+      "  GG  ", 
+      " GGGG ", 
+      "GGGGGG", 
+      " GGGG "
+    ]
+  ], 
+  "drawings": [
+    [
+      "  /\\  ", 
+      " /  \\ ", 
+      "/_  _\\", 
+      " _||_ "
+    ]
+  ]
+}

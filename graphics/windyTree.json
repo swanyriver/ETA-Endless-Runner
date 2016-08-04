@@ -1,0 +1,46 @@
+{
+  "category": "windyTree", 
+  "deadly": false, 
+  "colors": [
+    [
+      " GG ", 
+      "GGGG", 
+      "GGGG", 
+      " GG "
+    ], 
+    [
+      " GG ", 
+      "GGGG", 
+      "GGGG", 
+      " GG "
+    ]
+  ], 
+  "backColors": [
+    [
+      " CC ", 
+      "CCCC", 
+      "CCCC", 
+      " CC "
+    ], 
+    [
+      " CC ", 
+      "CCCC", 
+      "CCCC", 
+      " CC "
+    ]
+  ], 
+  "drawings": [
+    [
+      " () ", 
+      "(  )", 
+      "(  )", 
+      " || "
+    ], 
+    [
+      " () ", 
+      "( \")", 
+      "(\" )", 
+      " || "
+    ]
+  ]
+}

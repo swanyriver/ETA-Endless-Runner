@@ -1,0 +1,16 @@
+{
+  "category": "fence", 
+  "deadly": false, 
+  "colors": [
+    [
+      "YYYY", 
+      "YYYY"
+    ]
+  ], 
+  "drawings": [
+    [
+      "=|=|", 
+      "=|=|"
+    ]
+  ]
+}

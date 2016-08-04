@@ -1,0 +1,55 @@
+{
+  "category": "warriorEnemy", 
+  "deadly": true, 
+  "colors": [
+    [
+      "Y YY Y", 
+      " YYYY ", 
+      "  YY  "
+    ], 
+    [
+      "Y YY Y", 
+      " YYYY ", 
+      "  YY  "
+    ], 
+    [
+      "Y YY Y", 
+      " YYYY ", 
+      "  YY  "
+    ]
+  ], 
+  "backColors": [
+    [
+      "R RR R", 
+      " RRRR ", 
+      "  RR  "
+    ], 
+    [
+      "R RR R", 
+      " RRRR ", 
+      "  RR  "
+    ], 
+    [
+      "R RR R", 
+      " RRRR ", 
+      "  RR  "
+    ]
+  ], 
+  "drawings": [
+    [
+      "\\ () /", 
+      " ^{}^ ", 
+      "  /\\  "
+    ], 
+    [
+      "| () |", 
+      " ^{}^ ", 
+      "  /\\  "
+    ], 
+    [
+      "| () /", 
+      " ^{}^ ", 
+      "  /\\  "
+    ]
+  ]
+}
