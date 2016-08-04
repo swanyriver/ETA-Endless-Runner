@@ -84,7 +84,7 @@ class Grid():
     #initilized to default values for screen size
     #definitely can be changed with no apparent issue
     width = 80
-    height = 24
+    height = 20
 
     #function to set grid width and height
     def set_width(self, new_w):
