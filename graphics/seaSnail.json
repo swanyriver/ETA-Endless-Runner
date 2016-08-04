@@ -1,0 +1,25 @@
+{
+  "category": "seaSnail", 
+  "deadly": false, 
+  "colors": [
+    [
+      "   Y     ", 
+      "  YYYYYY ", 
+      "YYYYYYYYY"
+    ]
+  ], 
+  "backColors": [
+    [
+      "   C     ", 
+      "  CCCCCC ", 
+      "CCCCCCCCC"
+    ]
+  ], 
+  "drawings": [
+    [
+      "   ^     ", 
+      "  (@)_\\/ ", 
+      "_/_____\\_"
+    ]
+  ]
+}

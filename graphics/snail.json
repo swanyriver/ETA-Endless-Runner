@@ -1,0 +1,25 @@
+{
+  "category": "snail", 
+  "deadly": true, 
+  "colors": [
+    [
+      "   G     ", 
+      "  GGGGGG ", 
+      "GGGGGGGGG"
+    ]
+  ], 
+  "backColors": [
+    [
+      "   R     ", 
+      "  RRRRRR ", 
+      "RRRRRRRRR"
+    ]
+  ], 
+  "drawings": [
+    [
+      "   _     ", 
+      "  (@)_\\/ ", 
+      "_/_____\\_"
+    ]
+  ]
+}
