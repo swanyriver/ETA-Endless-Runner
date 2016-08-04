@@ -1,0 +1,25 @@
+{
+  "category": "rocketEnemy", 
+  "deadly": true, 
+  "colors": [
+    [
+      "  C  ", 
+      "CC CC", 
+      " C C "
+    ]
+  ], 
+  "backColors": [
+    [
+      "  R  ", 
+      "RR RR", 
+      " R R "
+    ]
+  ], 
+  "drawings": [
+    [
+      "  ^  ", 
+      "<( )>", 
+      " / \\ "
+    ]
+  ]
+}
