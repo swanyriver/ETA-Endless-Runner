@@ -4,6 +4,8 @@ import thread
 import SocketServer
 import sys
 import select
+import game_state
+import gameFunctions
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
@@ -53,7 +55,11 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 print response
 
                 if received[0] == networkKeys.ACTIONS.chat:
-                    # todo relay chat message
+                    ## relay chat message
+                    if received[0] == networkKeys.ACTIONS.chat:
+                        print "(NETWORK) chat received: ", repr(received)
+                    for threadIdent, theirmessageQue in threadOutgoingMessages.items():
+                        if threadIdent != cur_thread.ident: theirmessageQue.append(received)
                     print "(NETWORK) chat received: ", repr()
 
                 elif cur_thread.ident in allowedActionsForThreads and \
@@ -63,6 +69,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                         updatedState = game.get_change_request(received)
                         for threadIdent, theirmessageQue in threadOutgoingMessages.items():
                             if threadIdent != cur_thread.ident: theirmessageQue.append(updatedState)
+        
 
                     ## send client movement
                     print "sent to client: " + updatedState

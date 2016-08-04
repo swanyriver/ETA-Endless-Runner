@@ -1,0 +1,22 @@
+{
+  "category": "ghostEnemy", 
+  "deadly": true, 
+  "backColors": [
+    [
+      "  RRR  ", 
+      " RRRRR ", 
+      "RRRRRRR", 
+      " RRRRR ", 
+      "  RRR  "
+    ]
+  ], 
+  "drawings": [
+    [
+      "  ___  ", 
+      " |o o| ", 
+      "/  0  \\", 
+      " |   | ", 
+      "  ^^^  "
+    ]
+  ]
+}

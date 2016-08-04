@@ -8,12 +8,10 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         serverActive=True
         # self.request is the TCP socket connected to the client
         self.request.setblocking(0)
-
         cur_thread = threading.current_thread()
         myMessageQue = []
 
-
-        #send fist game room/map to client and add que to directory
+        #send first game room/map to client and add queue to directory
         lock.acquire()
         # if not all actions have been taken assign one set to this thread
         if availableActionSets:
