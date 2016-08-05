@@ -262,6 +262,9 @@ def checkForUpdate(recPipe, localGame, chatMan):
         #process parsed network message
         #end parsing immediately on game over message
         if kGAMEOVER in networkMessage:
+            #todo death animation with returned screen
+            log("(CURSES NET-IN GAME-OVER): killer: %s  gameoverDict:%s\n"%(
+                str(networkMessage.get(kSCREEN, None)), str(networkMessage[kGAMEOVER])) )
             return True, networkMessage[kGAMEOVER]
 
         if kSCREEN in networkMessage:
@@ -302,8 +305,7 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
         # check for message from network
         gameOver, message = checkForUpdate(networkPipe, localGame, chatMan)
         if gameOver:
-            log("(CURSES GAMEOVER):%r\n"%message)
-            break
+            return message
 
         # redraw game state acording to frame rate
         if time.time() - lastRefresh > SCREEN_REFRESH:
@@ -316,8 +318,6 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
             # log("input: %r %s %r\n" %
             #                  (char_in, chr(char_in) if 0 <= char_in < 256 else "{Non Ascii}",
             #                   curses.keyname(char_in)))
-
-            # todo switch to chat input method if / char is pressed
 
             if isTypingChatMessage:
                 isTypingChatMessage, msg = chatMan.newChatCharInput(char_in)
@@ -340,6 +340,7 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
 
 
 
+
 def cursesEngine(networkPipe):
     gameWindow = startCurses()
     colorDict = initColors()
@@ -351,8 +352,10 @@ def cursesEngine(networkPipe):
 
     localGame = gameState(graphicAssets.getAllAssets(), GAMEWINDOW_ROWS, GAMEWINDOW_COLS, colorDict)
 
-    constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan)
+    gameOverMessage = constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan)
 
     exitCurses(gameWindow)
+    #todo check if game over message or client quit
+    print str(gameOverMessage)
     log("(CURSES): curses screen exited\n")
 

@@ -3,6 +3,7 @@ import gameEntities
 import itertools
 from log import log
 import graphicAssets
+from networkKeys import *
 
 #return False if player still on same screen
 #update player position and score if changed screen
@@ -332,6 +333,13 @@ def getNewGameRoom(Game):
     return entities
 
 
-#todo called when player dies,  prepeare dict with any relevant info, score, reason for dying
-def getGameOverDictionary(game):
-    return {}
+def getGameOverDictionary(game, killer):
+    """
+    :type game: game_state.Gamestate
+    :type killer: gameEntities.gameEntity
+    :return:
+    """
+    return {
+        GAMEOVER.kKiller: killer.graphic.name,
+        GAMEOVER.kScore: game.roomsCrossed
+    }

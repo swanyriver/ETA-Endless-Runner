@@ -12,3 +12,6 @@ class ACTIONS():
     quit = "q"
     chat = "/"
 
+class GAMEOVER():
+    kScore = "score"
+    kKiller = "killer"

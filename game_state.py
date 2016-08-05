@@ -157,11 +157,11 @@ class Gamestate():
             #todo don't send network message? return None and have network check before transmit
         elif playerCollision == gameEntities.DEAD:
             print "(GAME-STATE): player has died at pos:", self.player.getYX(), collidedEntity
-            #NOTE: this is currently not ending game on client because gameOver is empty dict
             return gameEntities.JSONforNetwork(
                 charX=self.player.x,
                 charY=self.player.y,
-                gameOver=gameFunctions.getGameOverDictionary(self))
+                screen=[collidedEntity],
+                gameOver=gameFunctions.getGameOverDictionary(self, collidedEntity))
 
 
         # else: player has not collided, transmit updated position
