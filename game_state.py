@@ -84,7 +84,7 @@ class Grid():
     #initilized to default values for screen size
     #definitely can be changed with no apparent issue
     width = 80
-    height = 24
+    height = 20
 
     #function to set grid width and height
     def set_width(self, new_w):
@@ -92,24 +92,11 @@ class Grid():
     def set_height(self, new_h):
         self.height = new_h
 
-    #sends a json message to _________
-    #IS THIS RIGHT??
-    def update(self):
-        data = {'width': self.width, 'height': self.height}
-        json.dumps(data)
-        return
-
-    #recieves a json message from ______
-    def get_change_request(self, m):
-        req = json.loads(m)
-        #do something here..
-        return
 
 #gamestate class: set up gamestate and keeps track of user scores
-#and grid. I don't believe the Gamestate class itself stores instances
-#of any other class
 class Gamestate():
-
+    STARTING_ENEMY_AMOUNT = 2
+    INCREASE_ENEMY_FREQUENCY = 4
     #sets up initial variables and grid
     def __init__(self):
         self.grid = Grid()
@@ -122,12 +109,20 @@ class Gamestate():
 
         self.player = Player()
 
+        #used to block exit from entry door
+        self.horizBlocker = graphicAssets.getHorizBlocker()
+        self.vertBlocker = graphicAssets.getVertBlocker()
+
+        # adds player to middle of grid
+        self.player.set_x(self.grid.width / 2)
+        self.player.set_y(self.grid.height / 2)
+        self.numBadGuysToPlace = Gamestate.STARTING_ENEMY_AMOUNT
+        self.countDownToExtraBadGuy = Gamestate.INCREASE_ENEMY_FREQUENCY
+
         #add obstacles initially?
         self.entities = gameFunctions.getNewGameRoom(self)
 
-        #adds player to middle of grid
-        self.player.set_x(self.grid.width/2)
-        self.player.set_y(self.grid.height/2)
+
 
     #add timer
     def startTimer(self):
@@ -161,20 +156,26 @@ class Gamestate():
         if playerCollision == gameEntities.COLLIDED:
             self.player.setYX(*cachedPlayerPos)
             print "(GAME-STATE): player has collided at pos:", self.player.getYX(), "with", collidedEntity
-            #todo don't send network message? return None and have network check before transmit
+            #todo (performance) don't send network message? return None and have network check before transmit
         elif playerCollision == gameEntities.DEAD:
             print "(GAME-STATE): player has died at pos:", self.player.getYX(), collidedEntity
-            #NOTE: this is currently not ending game on client because gameOver is empty dict
             return gameEntities.JSONforNetwork(
                 charX=self.player.x,
                 charY=self.player.y,
-                gameOver=gameFunctions.getGameOverDictionary(self))
+                screen=[collidedEntity],
+                gameOver=gameFunctions.getGameOverDictionary(self, collidedEntity))
 
 
         # else: player has not collided, transmit updated position
 
-        playerPosOnNewScreen = gameFunctions.playerLeftScreen(self)
-        if playerPosOnNewScreen:
+        playerEnteredNewRoom = gameFunctions.playerLeftScreen(self)
+        if playerEnteredNewRoom:
+
+            self.countDownToExtraBadGuy -= 1
+            if self.countDownToExtraBadGuy <= 0:
+                self.numBadGuysToPlace += 1
+                self.countDownToExtraBadGuy = Gamestate.INCREASE_ENEMY_FREQUENCY
+
             self.entities = gameFunctions.getNewGameRoom(self)
             return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
 

@@ -1,5 +1,3 @@
-# Proof of concept test for curses based input and output on flip server
-
 import curses
 import time
 from log import log
@@ -7,6 +5,8 @@ import graphicAssets
 import gameEntities
 import json
 from networkKeys import *
+from collections import namedtuple
+from chatManager import ChatManager
 
 # Macros for curses magic number functions
 ON = 1
@@ -14,7 +14,8 @@ OFF = 0
 
 SCREEN_REFRESH = .05 # 20FPS
 TICK = .5            # starting frequency of frame transitions for animation,  half second
-
+GAMEWINDOW_ROWS = 20
+GAMEWINDOW_COLS = 80
 
 # int to int, mapping keyboard key to action enum
 control_scheme = {
@@ -29,6 +30,16 @@ control_scheme = {
     27:ACTIONS.quit, #escape key
     ord('q'):ACTIONS.quit
 }
+
+cursesColors = [(curses.COLOR_BLACK, graphicAssets.GraphicAsset.kBlack),
+                (curses.COLOR_RED, graphicAssets.GraphicAsset.kRed),
+                (curses.COLOR_GREEN, graphicAssets.GraphicAsset.kGreen),
+                (curses.COLOR_YELLOW, graphicAssets.GraphicAsset.kYellow),
+                (curses.COLOR_BLUE, graphicAssets.GraphicAsset.kBlue),
+                (curses.COLOR_MAGENTA, graphicAssets.GraphicAsset.kMagenta),
+                (curses.COLOR_CYAN, graphicAssets.GraphicAsset.kCyan),
+                (curses.COLOR_WHITE, graphicAssets.GraphicAsset.kWhite)]
+
 
 #simple wrapper around int to keep all animations on same speed
 class TimingClock():
@@ -53,7 +64,9 @@ class TimingClock():
 
 # gamEntity subclass for encapsulating the drawing related methods
 class DrawableEntity(gameEntities.gameEntity):
-    def __init__(self, graphicAsset, y, x, timingClock):
+    Pixel = namedtuple("pixel", ['y', 'x', 'char', 'color'])
+
+    def __init__(self, graphicAsset, y, x, timingClock, colorDictionary):
         super(DrawableEntity, self).__init__(graphicAsset, y, x)
 
         if not len(graphicAsset.drawings) > 1:
@@ -63,25 +76,40 @@ class DrawableEntity(gameEntities.gameEntity):
             self.lastFrameTime = time.time()
 
         self.timingClock = timingClock
+        self.colorDict = colorDictionary
+        self.drawingCache = None
 
-        #todo add these attributes to graphicAsset
-        #todo add these assets to Graphics maker applet
-        #todo add these assets to GraphicsAssets jsonPaser
         self.frameDurations = [1] * len(self.graphic.drawings)
         self.totalDuration = sum(self.frameDurations) * self.timingClock.tick
 
-        # DEBUG log for instantiating animated drawings
-        # log("DRAW INSTANCE:" + str(graphicAsset.name) + "\n" + "num frames:%d"%len(self.graphic.drawings) +
-        #     "\ntimings:%s\n"%str(self.frameDurations) +
-        #     "drawings: " + "\n".join("\n".join(d) for d in self.graphic.drawings))
+
+    def getColorInt(self, frame, y, x):
+        try:
+            return curses.color_pair(self.colorDict.get(
+                (self.graphic.colorFrames[frame][y][x]
+                 if self.graphic.colorFrames else graphicAssets.GraphicAsset.kWhite,
+                 self.graphic.backgroundFrames[frame][y][x]
+                 if self.graphic.backgroundFrames else graphicAssets.GraphicAsset.kBlack), 0))
+        except (IndexError, TypeError):
+            log("(CURSES RENDER ERROR) Error accessing color arrays")
+            # return white on black
+            return curses.color_pair(0)
 
 
-    #todo add color
     def getDrawingFrame(self, frame):
-        return [gameEntities.Pixel(y + self.y, x + self.x, ord(self.graphic.drawings[frame][y][x]))
-                for y in range(self.graphic.height)
-                for x in range(self.graphic.width)
-                if self.graphic.drawings[frame][y][x] != " "]
+
+        if self.drawingCache and (self.y, self.x, frame) == self.drawingCache[0]:
+            return self.drawingCache[1]
+
+        pixelArray = [DrawableEntity.Pixel(y + self.y, x + self.x,
+                                           ord(self.graphic.drawings[frame][y][x]),
+                                           self.getColorInt(frame, y, x))
+                      for y in range(self.graphic.height)
+                      for x in range(self.graphic.width)
+                      if (y, x) in self.graphic.hitbox]
+        self.drawingCache = ((self.y, self.x, frame), pixelArray)
+        return pixelArray
+
 
     def getDrawingNoAnim(self):
         return self.getDrawingFrame(0)
@@ -97,16 +125,12 @@ class DrawableEntity(gameEntities.gameEntity):
             self.currentFrame = (self.currentFrame + 1) % len(self.graphic.drawings)
             self.lastFrameTime = self.timingClock.getTime()
 
-            # debug log for animation transition
-            # log(str(self) + "Advanced frame to frame %d/%d\n"%(self.currentFrame, len(self.graphic.drawings)) +
-            #     "\n".join(self.graphic.drawings[self.currentFrame]) + "\n")
-
         return self.getDrawingFrame(self.currentFrame)
 
-#
+
 class renderPlayer(DrawableEntity):
-    def __init__(self, timingClock):
-        super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock)
+    def __init__(self, timingClock, colorDictionary):
+        super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock, colorDictionary)
         #todo create 2 or 4 way symmetrical drawings for character
         #todo create rotated or flipped drawings of character arrays to load before drawing
         #self.letfFaceDrawing =
@@ -121,23 +145,26 @@ class renderPlayer(DrawableEntity):
 
 
 class gameState():
-    def __init__(self, assets, maxY, maxX):
+    def __init__(self, assets, maxY, maxX, colorDict):
         self.maxX = maxX
         self.maxY = maxY
         self.entities = []
         self.assets = assets
         self.timingClock = TimingClock()
-        self.player = renderPlayer(self.timingClock)
+        self.colorDict = colorDict
+        self.player = renderPlayer(self.timingClock, colorDict)
 
     def newScreen(self, newEntities):
         self.entities = []
         for e in newEntities:
-            self.entities.append(DrawableEntity(
-                y=e['y'],
-                x=e['x'],
-                graphicAsset=self.assets[e['graphicAsset']],
-                timingClock=self.timingClock
-            ))
+            if e['graphicAsset'] in self.assets:
+                self.entities.append(DrawableEntity(
+                    y=e['y'],
+                    x=e['x'],
+                    graphicAsset=self.assets[e['graphicAsset']],
+                    timingClock=self.timingClock,
+                    colorDictionary=self.colorDict
+                ))
         #character position is invalidated on new screen
         self.player.setYX(None, None)
         log("(CURSES-GAME): new screens entities: (%d) "%len(self.entities)
@@ -150,7 +177,11 @@ class gameState():
     def drawEntity(self, entity, screen):
         for pixel in filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX,
                             entity.getDrawing()):
-            screen.addch(*pixel)
+            try:
+                screen.addch(*pixel)
+            except curses.error:
+                # curses raises a superfulous error when drawing on the bottom right char of a subdivided window
+                pass
 
     def render(self, screen):
         screen.erase()
@@ -164,6 +195,20 @@ class gameState():
         screen.refresh()
 
 
+def initColors():
+    curses.start_color()
+    colorDict = {(None,None):0}
+    n = 1
+    for fgndColor, fgrndKey in cursesColors:
+        for bkgrndColor, bkgrndKey in cursesColors:
+            curses.init_pair(n, fgndColor, bkgrndColor)
+            colorDict[(fgndColor, bkgrndColor)] = n
+            colorDict[(fgrndKey, bkgrndKey)] = n
+            n += 1
+
+    return colorDict
+
+
 def startCurses():
     screen = curses.initscr()
     curses.noecho()
@@ -171,9 +216,6 @@ def startCurses():
     screen.keypad(ON)
     screen.nodelay(ON)
     curses.curs_set(OFF)
-    curses.start_color()
-    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_YELLOW)
     return screen
 
 
@@ -193,12 +235,20 @@ def respondToInput(in_char_num, sendpipe):
         sendpipe.send(action)
 
 
-def checkForUpdate(recPipe, localGame):
+def checkForUpdate(recPipe, localGame, chatMan):
 
     while recPipe.poll():
         networkMessage = recPipe.recv()
         if not networkMessage:
             continue
+
+        #intercept chat messages
+        if networkMessage[0] == ACTIONS.chat:
+            networkMessage = networkMessage.replace("\n", "")
+            log("(CURSES NET-IN CHAT): " + str(networkMessage)[1:] + "\n")
+            chatMan.newChatMessage(networkMessage[1:])
+            return False, None
+
         log("(CURSES NET-IN): " + str(networkMessage) + "\n")
         try:
             networkMessage = json.loads(networkMessage)
@@ -212,7 +262,10 @@ def checkForUpdate(recPipe, localGame):
         #process parsed network message
         #end parsing immediately on game over message
         if kGAMEOVER in networkMessage:
-            return False, networkMessage[kGAMEOVER]
+            #todo death animation with returned screen
+            log("(CURSES NET-IN GAME-OVER): killer: %s  gameoverDict:%s\n"%(
+                str(networkMessage.get(kSCREEN, None)), str(networkMessage[kGAMEOVER])) )
+            return True, networkMessage[kGAMEOVER]
 
         if kSCREEN in networkMessage:
             entitiesArray = networkMessage[kSCREEN]
@@ -236,56 +289,73 @@ def checkForUpdate(recPipe, localGame):
             else:
                 log("(CURSES NET-IN ERROR): player position dict badly formed")
 
-    return True, None
+    return False, None
 
 # input is captured constantly but screen refreshes on interval
 # no-sleep version of process loop
-def constantInputReadLoop(screen, networkPipe, localGame):
+def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
     log("constant input loop initiated\n")
 
     lastRefresh = 0
+    isTypingChatMessage = False
 
     while True:
         ### primary input and output loop ###
 
         # check for message from network
-        gameOver, message = checkForUpdate(networkPipe, localGame)
-        if not gameOver:
-            log("(CURSES GAMEOVER):%r\n"%message)
-            break
+        gameOver, message = checkForUpdate(networkPipe, localGame, chatMan)
+        if gameOver:
+            return message
 
         # redraw game state acording to frame rate
         if time.time() - lastRefresh > SCREEN_REFRESH:
             lastRefresh = time.time()
-            localGame.render(screen)
+            localGame.render(gameWindow)
 
         # gather input from keyboard and transmit to network if appropriate
-        char_in = screen.getch()
+        char_in = gameWindow.getch()
         if char_in != curses.ERR:
             # log("input: %r %s %r\n" %
             #                  (char_in, chr(char_in) if 0 <= char_in < 256 else "{Non Ascii}",
             #                   curses.keyname(char_in)))
 
-            # todo switch to chat input method if / char is pressed
+            if isTypingChatMessage:
+                isTypingChatMessage, msg = chatMan.newChatCharInput(char_in)
+                if not isTypingChatMessage and msg:
+                    networkPipe.send(msg)
+                    # display users sent message in chat log
+                    # todo delineate sent messages with a different color or leading character
+                    chatMan.newChatMessage(msg[1:-1])
 
-            respondToInput(char_in, networkPipe)
+            else:
+                if char_in == ord(ACTIONS.chat):
+                    isTypingChatMessage = True
+                    chatMan.newChatCharInput(char_in)
+                else:
+                    respondToInput(char_in, networkPipe)
 
-            if control_scheme.get(char_in) == ACTIONS.quit:
-                log("(CURSES GAMEOVER):%s\n" % "this client pressed quit")
-                break
+                    if control_scheme.get(char_in) == ACTIONS.quit:
+                        log("(CURSES GAMEOVER):%s\n" % "this client pressed quit")
+                        break
+
+
 
 
 def cursesEngine(networkPipe):
-    myScreen = startCurses()
+    gameWindow = startCurses()
+    colorDict = initColors()
 
-    #todo determine if terminal is sufficient size for predifined 80 X 24 minus chat window
-    maxY, maxX = myScreen.getmaxyx()
+    gameWindow.resize(GAMEWINDOW_ROWS, GAMEWINDOW_COLS)
+    chatDisplayWindow = curses.newwin(3, 80, 20, 0)
+    chatEntryLine = curses.newwin(1, 79, 23, 0)
+    chatMan = ChatManager(chatDisplayWindow, chatEntryLine, colorDict)
 
-    #-1 because cant draw on bottom right pixel
-    #todo reserve space for chat
-    localGame = gameState(graphicAssets.getAllAssets(), maxY-1, maxX)
+    localGame = gameState(graphicAssets.getAllAssets(), GAMEWINDOW_ROWS, GAMEWINDOW_COLS, colorDict)
 
-    constantInputReadLoop(myScreen, networkPipe, localGame)
+    gameOverMessage = constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan)
 
-    exitCurses(myScreen)
+    exitCurses(gameWindow)
+    #todo check if game over message or client quit
+    print str(gameOverMessage)
     log("(CURSES): curses screen exited\n")
+

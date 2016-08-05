@@ -6,3 +6,7 @@ testing/
 *.pyc
 log.txt
 example.txt
+genColorDict.py
+myTestRoomGenerate.py
+mymultiserver.py
+selectMTServer.py

@@ -3,8 +3,36 @@ import json
 import glob
 import os
 
+VERTWALLMAXWIDTH = 5
+HORIZWALLMAXHEIGHT = 4
+
 class ParseAssetError(Exception):
     pass
+
+
+class GraphicsLibrary(dict):
+    def __init__(self, d):
+        super(GraphicsLibrary, self).__init__(d)
+
+    def getCategories(self):
+        allCategories = set(g.category for g in self.values() if g.category)
+        # return only viable categories to draw a room,  must have both usable decor and enemies
+        return [c for c in allCategories if c and
+                [d for d in self.getDecorations(c) if d.width <= VERTWALLMAXWIDTH] and
+                [d for d in self.getDecorations(c) if d.height <= HORIZWALLMAXHEIGHT] and
+                self.getBadGuys(c)]
+
+    def getAllDecorations(self):
+        return [g for g in self.values() if not g.deadly]
+
+    def getAllBadGuys(self):
+        return [g for g in self.values() if g.deadly]
+
+    def getDecorations(self, category):
+        return [g for g in self.values() if not g.deadly and g.category == category]
+
+    def getBadGuys(self, category):
+        return [g for g in self.values() if g.deadly and g.category == category]
 
 
 #debugging method
@@ -54,14 +82,32 @@ def getHitbox(height, width, drawing):
     # Htibox may not be contiguous (intended)
     return allPixels.difference(safe)
 
+def stringArrayProperlyFormed(arr, w, h):
+    if type(arr) is not list or len(arr)<h:
+        return False
+    return all((isinstance(line, str) or isinstance(line, unicode)) and len(line) == w for line in arr)
+
 
 class GraphicAsset():
     kDeadly = "deadly" #Boolean
     kDrawings = "drawings" #array of arrays of strings
-    kColors = "colors" #array of arrays, todo define pattern for declaring, assert same as drawings array
+    kCategory = "category"
+    kColors = "colors"
+    kBackColor = "backColors"
+    kBlack = "K"
+    kRed = "R"
+    kGreen = "G"
+    kYellow = "Y"
+    kBlue = "B"
+    kMagenta = "M"
+    kCyan = "C"
+    kWhite = "W"
 
     def __init__(self, loaded, name):
         self.name = name
+        self.colorFrames = None
+        self.backgroundFrames = None
+        self.category = loaded.get(GraphicAsset.kCategory, None) or None
         #for k in [GraphicAsset.kDeadly, GraphicAsset.kDrawings, GraphicAsset.kColors]:
         for k in [GraphicAsset.kDeadly, GraphicAsset.kDrawings]:
             if k not in loaded:
@@ -99,14 +145,31 @@ class GraphicAsset():
         #detect hitbox on first drawing
         self.hitbox = getHitbox(self.height, self.width, self.drawings[0])
 
-
         #assert hitboxs are same for all drawings
         for d in self.drawings[1:]:
             if getHitbox(self.height, self.width, d) != self.hitbox:
                 errorString = "hitbox for each drawing must be the same, because server will not know what animation frame is showing on each client"
                 errorString += drawCharacterAndHitbox(self.drawings[0], self.hitbox)
+                errorString += "\n\n"
                 errorString += drawCharacterAndHitbox(d, getHitbox(self.height, self.width, d))
                 raise ParseAssetError(errorString)
+
+        #parse color arrays  #forginingly
+        if GraphicAsset.kColors in loaded:
+            if len(loaded[GraphicAsset.kColors]) == len(self.drawings) and \
+                    all(stringArrayProperlyFormed(l, self.width, self.height) for l in loaded[GraphicAsset.kColors]):
+                self.colorFrames = loaded[GraphicAsset.kColors]
+            else:
+                raise ParseAssetError("json file " + GraphicAsset.kColors + " field improperly defined")
+
+        if GraphicAsset.kBackColor in loaded:
+            if len(loaded[GraphicAsset.kBackColor]) == len(self.drawings) and \
+                    all(stringArrayProperlyFormed(l, self.width, self.height) for l in loaded[GraphicAsset.kBackColor]):
+                self.backgroundFrames = loaded[GraphicAsset.kBackColor]
+            else:
+                raise ParseAssetError("json file " + GraphicAsset.kBackColor + " field improperly defined")
+
+
 
 
 
@@ -142,11 +205,11 @@ def testOneAsset(jsonString):
     try:
         asset = CreateFromJSON(jsonString)
     except ParseAssetError as err:
-        return err
+        return False, str(err)
     else:
         output = "GraphicAssets.py Successfully created asset from JSON\n"
         output += drawCharacterAndHitbox(asset.drawings[0], asset.hitbox)
-        return output
+        return True, str(output)
 
 
 #will return a dictionary of name:assets
@@ -162,7 +225,7 @@ def getAllAssets(debug = False):
 
     """
     :param debug: display verboase message on parse failure if true
-    :rtype:dict[str, GraphicAsset]
+    :rtype:GraphicsLibrary
     """
 
     graphicAssets = {g.name:g for g in
@@ -182,7 +245,17 @@ def getAllAssets(debug = False):
                 else "None of the %d asset files were properly formatted"%len(getAssetFileNames()))
         raise ParseAssetError(errorString)
 
-    return graphicAssets
+    return GraphicsLibrary(graphicAssets)
+
+
+def getReservedAsset(FILE_LOC, debug = False):
+    if not os.path.isfile(FILE_LOC):
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset not present at: %s" % FILE_LOC)
+    asset = createFromFileName(FILE_LOC)
+    if not asset:
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset could not be parsed")
+
+    return asset
 
 
 def getPlayerAsset(debug = False):
@@ -191,16 +264,25 @@ def getPlayerAsset(debug = False):
     :rtype: GraphicAsset
     """
     PLAYER_FILE_LOC = DIRECTORY + "/reserved/player" + FILE_TYPE
-    if not os.path.isfile(PLAYER_FILE_LOC):
-        raise ParseAssetError("(CRITICAL ERROR): player graphic asset not present at: %s"%PLAYER_FILE_LOC)
+    return getReservedAsset(PLAYER_FILE_LOC)
 
-    player = createFromFileName(PLAYER_FILE_LOC)
 
-    if not player:
-        raise ParseAssetError("(CRITICAL ERROR): player graphic asset could not be parsed")
+def getVertBlocker(debug = False):
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype: GraphicAsset
+    """
+    blockerFile = DIRECTORY + "/reserved/vertBlocker" + FILE_TYPE
+    return getReservedAsset(blockerFile)
 
-    #todo make the return of this function the default param for the player __init__() and render side player entity
-    return player
+
+def getHorizBlocker(debug = False):
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype: GraphicAsset
+    """
+    blockerFile = DIRECTORY + "/reserved/horizBlocker" + FILE_TYPE
+    return getReservedAsset(blockerFile)
 
 
 def displayGraphicLibrary(ga=None):
@@ -235,6 +317,17 @@ def displayGraphicLibrary(ga=None):
         print "--------------------------------------"
         print "--------------------------------------"
 
+        print "\n\nCATEGORIES:"
+        for c in set(g.category for g in ga):
+            assetsInCategory = [g for g in ga if g.category == c]
+            print "(%d)"%len(assetsInCategory), c, "\t",
+            print ["<%s>"%g.name if g.deadly else g.name for g in assetsInCategory]
+
+        print ""
+        #create galibraryobject
+        gaL = GraphicsLibrary({g.name:g for g in ga} )
+        print "catagories with sufficient decor and enemies:", gaL.getCategories()
+
 
 
 if __name__ == '__main__':
@@ -250,4 +343,4 @@ if __name__ == '__main__':
     else:
         graphics = getAllAssets(debug=True)
         player = getPlayerAsset(debug=True)
-        displayGraphicLibrary(ga=(graphics.values() + [player]))
+        #displayGraphicLibrary(ga=(graphics.values() + [player]))
