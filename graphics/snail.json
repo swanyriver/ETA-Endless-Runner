@@ -1,5 +1,5 @@
 {
-  "category": "snail", 
+  "category": "Garden", 
   "deadly": true, 
   "colors": [
     [
@@ -12,7 +12,7 @@
     [
       "   R     ", 
       "  RRRRRR ", 
-      "RRRRRRRRR"
+      "RRGGGGGRR"
     ]
   ], 
   "drawings": [
