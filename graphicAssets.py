@@ -291,6 +291,12 @@ def displayGraphicLibrary(ga=None):
         print "--------------------------------------"
         print "--------------------------------------"
 
+        print "\n\nCATEGORIES:"
+        for c in set(g.category for g in ga):
+            assetsInCategory = [g for g in ga if g.category == c]
+            print "(%d)"%len(assetsInCategory), c, "\t",
+            print ["<%s>"%g.name if g.deadly else g.name for g in assetsInCategory]
+
 
 
 if __name__ == '__main__':
