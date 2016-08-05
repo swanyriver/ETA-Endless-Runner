@@ -1,6 +1,7 @@
 import random
 import gameEntities
-
+import itertools
+from log import log
 
 # todo determine if character has entered new screen and update game layout
 #return None if player still on same screen
@@ -14,6 +15,7 @@ SOUTH = 1
 EAST = 2
 WEST = 3
 SIDES = [NORTH, SOUTH, EAST, WEST]
+SIDENAMES = {NORTH:"NORTH", SOUTH:"SOUTH", EAST:"EAST", WEST:"WEST"}
 VERTWALLMAXWIDTH = 5
 HORIZWALLMAXHEIGHT = 4
 GATESZIE = 1.25
@@ -32,6 +34,23 @@ def playerOnSide(player, grid):
     elif x <= 0:
         return WEST
     elif x >= grid.width - player.getWidth():
+        return EAST
+
+
+def gateOnSide(gate, grid):
+    """
+    :type player: game_state.player
+    :param grid: game_state.Grid
+    :return:
+    """
+    y,x = gate
+    if y <= 0:
+        return NORTH
+    elif y >= grid.height:
+        return SOUTH
+    elif x <= 0:
+        return WEST
+    elif x >= grid.width:
         return EAST
 
 
@@ -59,7 +78,7 @@ def getVertWall(asset, xpos, ystart, yend, withGate=False, withPlayer=False, pla
                 yend -= asset.height
                 output.append(gameEntities.gameEntity(asset, yend, xpos))
 
-        gates.append((ystart,xpos))
+        gates.append((ystart, xpos if xpos == 0 else xpos + asset.width))
         return output
 
 
@@ -97,8 +116,69 @@ def getHorizWall(asset, ypos, xstart, xend, withGate=False, withPlayer=False, pl
                 xend -= asset.width
                 output.append(gameEntities.gameEntity(asset, ypos, xend))
 
-        gates.append((xstart, ypos))
+        gates.append((ypos if ypos == 0 else ypos + asset.height, xstart))
         return output
+
+
+def inclusiveRange(a, b):
+    a,b = sorted((a,b))
+    return range(a,b+1)
+
+def getPlayerPath(player, outGate, grid, wallWidth, wallHeight):
+    exitY, exitX = outGate
+    playerY, playerX = player.getYX()
+    playerSide = playerOnSide(player, grid)
+    exitSide = gateOnSide(outGate, grid)
+
+    log("(GAME-GEN) player on: %s (%d,%d)  exit on: %s (%d,%d)\n"%(SIDENAMES[playerSide], playerY, playerX,
+                                                                   SIDENAMES[exitSide], exitY, exitX))
+
+    path = []
+    #get player clear of wall
+    if playerSide == NORTH:
+        path.extend((y, playerX) for y in range(playerY, wallHeight+1))
+        playerY = wallHeight
+    elif playerSide == SOUTH:
+        path.extend((y, playerX) for y in range(playerY, grid.height-wallHeight-player.getHeight()-1, -1))
+        playerY = grid.height-wallHeight-player.getHeight()
+    elif playerSide == WEST:
+        path.extend((playerY, x) for x in range(playerX, wallWidth+1))
+        playerX = wallWidth
+    elif playerSide == EAST:
+        path.extend((playerY, x) for x in range(playerX, grid.width-wallWidth-player.getWidth()-1, -1))
+        playerX = grid.width-wallWidth-player.getWidth()
+
+    genInnerPath = random.choice((True,False))
+
+    genInnerPath = True #todo remove
+
+    #Generate path from opposite walls
+    if sorted([playerSide, exitSide]) == sorted([NORTH, SOUTH]):
+        if genInnerPath:
+            pivotPoint = random.randint(wallHeight, grid.height - wallHeight - player.getHeight())
+            path.extend( (y, playerX) for y in inclusiveRange(playerY, pivotPoint) )
+            path.extend( (pivotPoint, x) for x in inclusiveRange(playerX, exitX) )
+            path.extend( (y, exitX) for y in inclusiveRange(pivotPoint, exitY))
+            return path
+        else:
+            return path #todo implement outer
+
+    if sorted([playerSide, exitSide]) == sorted([EAST, WEST]):
+        if genInnerPath:
+            pivotXPoint = random.randint(wallWidth, grid.width - wallWidth - player.getWidth())
+            path.extend( (playerY, x) for x in inclusiveRange(playerX, pivotXPoint))
+            path.extend( (y, pivotXPoint) for y in inclusiveRange(playerY, exitY))
+            path.extend( (exitY, x) for x in inclusiveRange(pivotXPoint, exitX))
+            return path
+        else:
+            return path #todo implement outer
+
+    # Generate cornered path
+    else:
+        return path #todo implement corner paths
+
+
+
 
 
 def getNewGameRoom(Game):
@@ -109,17 +189,18 @@ def getNewGameRoom(Game):
 
     decor = Game.gaLibrary.getAllDecorations()
     enimies = Game.gaLibrary.getAllBadGuys()
-
-    vertWallDecor = random.choice([d for d in decor if d.width <= VERTWALLMAXWIDTH])
-    horizWallDecor = random.choice([d for d in decor if d.height <= HORIZWALLMAXHEIGHT])
-
     entities = []
 
+
+
+    #############################
+    #### CREATE WALLS & GATES ###
+    #############################
+    vertWallDecor = random.choice([d for d in decor if d.width <= VERTWALLMAXWIDTH])
+    horizWallDecor = random.choice([d for d in decor if d.height <= HORIZWALLMAXHEIGHT])
     playersSide = playerOnSide(Game.player, Game.grid)
     sidesWithGates = random.sample([side for side in SIDES if side != playersSide], random.randint(1, 3))
-
     gates = []
-
     #west
     entities.extend(getVertWall(vertWallDecor, 0, horizWallDecor.height, Game.grid.height - horizWallDecor.height,
                                 withGate=WEST in sidesWithGates, withPlayer= WEST == playersSide, player=Game.player,
@@ -137,6 +218,18 @@ def getNewGameRoom(Game):
     entities.extend(getHorizWall(horizWallDecor, Game.grid.height - horizWallDecor.height, 0, Game.grid.width,
                                  withGate=SOUTH in sidesWithGates, withPlayer=SOUTH == playersSide, player=Game.player,
                                  gates=gates, horizWidth=horizWallDecor.width))
+
+
+    ##########################################################
+    ## RESERVE PATH FROM PLAYER TO AT LEAST ONE EXIT #########
+    ##########################################################
+    exitGate = random.choice(gates)
+    playerPath = getPlayerPath(Game.player, exitGate, Game.grid,
+                               wallWidth=vertWallDecor.width, wallHeight=horizWallDecor.height)
+
+    #turn player path into hitbox path as wide and tall as player
+    pathHB = set(itertools.chain( (hbY + y, hbX + x) for hbY, hbX in Game.player.graphic.hitbox for y,x in playerPath))
+    entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB)
 
     return entities
 
