@@ -61,7 +61,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                         print "(NETWORK) chat received: ", repr(received)
                     for threadIdent, theirmessageQue in threadOutgoingMessages.items():
                         if threadIdent != cur_thread.ident: theirmessageQue.append(received)
-                    print "(NETWORK) chat received: ", repr()
+                    print "(NETWORK) chat received: ", repr(received)
 
                 elif cur_thread.ident in allowedActionsForThreads and \
                                 received in allowedActionsForThreads[cur_thread.ident]:
