@@ -267,8 +267,9 @@ def getNewGameRoom(Game):
     #turn player path into hitbox path as wide and tall as player
     pathHB = set(itertools.chain(*(deltaHB(Game.player.graphic.hitbox, y, x) for y, x in playerPath)))
 
-    # used during debug to visualize reserved path
-    entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB) # todo remove this vis
+    #### DEBUG ONLY used during debug to visualize reserved path
+    #entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB)
+    ###############################################################
 
     ##########################################################
     #### INSERT ENIMIES AVOIDING COLISIONS AND PLAYER PATH ###
