@@ -3,6 +3,8 @@ import json
 import glob
 import os
 
+VERTWALLMAXWIDTH = 5
+HORIZWALLMAXHEIGHT = 4
 
 class ParseAssetError(Exception):
     pass
@@ -11,10 +13,14 @@ class ParseAssetError(Exception):
 class GraphicsLibrary(dict):
     def __init__(self, d):
         super(GraphicsLibrary, self).__init__(d)
-        self.categories = list(set(g.category for g in self.values()))
 
     def getCategories(self):
-        return self.categories
+        allCategories = set(g.category for g in self.values() if g.category)
+        # return only viable categories to draw a room,  must have both usable decor and enemies
+        return [c for c in allCategories if c and
+                [d for d in self.getDecorations(c) if d.width <= VERTWALLMAXWIDTH] and
+                [d for d in self.getDecorations(c) if d.height <= HORIZWALLMAXHEIGHT] and
+                self.getBadGuys(c)]
 
     def getAllDecorations(self):
         return [g for g in self.values() if not g.deadly]
@@ -296,6 +302,11 @@ def displayGraphicLibrary(ga=None):
             assetsInCategory = [g for g in ga if g.category == c]
             print "(%d)"%len(assetsInCategory), c, "\t",
             print ["<%s>"%g.name if g.deadly else g.name for g in assetsInCategory]
+
+        print ""
+        #create galibraryobject
+        gaL = GraphicsLibrary({g.name:g for g in ga} )
+        print "catagories with sufficient decor and enemies:", gaL.getCategories()
 
 
 

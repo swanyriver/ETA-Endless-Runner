@@ -2,6 +2,7 @@ import random
 import gameEntities
 import itertools
 from log import log
+import graphicAssets
 
 # todo determine if character has entered new screen and update game layout
 #return None if player still on same screen
@@ -16,8 +17,6 @@ EAST = 2
 WEST = 3
 SIDES = [NORTH, SOUTH, EAST, WEST]
 SIDENAMES = {NORTH:"NORTH", SOUTH:"SOUTH", EAST:"EAST", WEST:"WEST"}
-VERTWALLMAXWIDTH = 5
-HORIZWALLMAXHEIGHT = 4
 GATESZIE = 1.25
 
 def playerOnSide(player, grid):
@@ -224,16 +223,17 @@ def getNewGameRoom(Game):
     :return:
     """
 
-    decor = Game.gaLibrary.getAllDecorations()
+    category = random.choice(Game.gaLibrary.getCategories())
+    log("(GAME-GEN): category for new room is: %s\n"%category)
+    decor = Game.gaLibrary.getDecorations(category)
     entities = []
-
 
 
     #############################
     #### CREATE WALLS & GATES ###
     #############################
-    vertWallDecor = random.choice([d for d in decor if d.width <= VERTWALLMAXWIDTH])
-    horizWallDecor = random.choice([d for d in decor if d.height <= HORIZWALLMAXHEIGHT])
+    vertWallDecor = random.choice([d for d in decor if d.width <= graphicAssets.VERTWALLMAXWIDTH])
+    horizWallDecor = random.choice([d for d in decor if d.height <= graphicAssets.HORIZWALLMAXHEIGHT])
     playersSide = playerOnSide(Game.player, Game.grid)
     sidesWithGates = random.sample([side for side in SIDES if side != playersSide], random.randint(1, 3))
 
@@ -275,7 +275,7 @@ def getNewGameRoom(Game):
     ##########################################################
     log(str(dir(Game)) + "\n")
     enimiesToPlace = Game.numBadGuysToPlace
-    enimies = Game.gaLibrary.getAllBadGuys()
+    enimies = Game.gaLibrary.getBadGuys(category)
     avoidHitBoxMap = set(itertools.chain(*(e.getDeltaHitbox() for e in entities)))
     avoidHitBoxMap.update(pathHB)
     negativeSpace = set((y,x)
