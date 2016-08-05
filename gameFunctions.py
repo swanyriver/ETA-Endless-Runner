@@ -163,18 +163,14 @@ def getPlayerPath(player, outGate, grid, wallWidth, wallHeight):
         path.extend((exitY, x) for x in inclusiveRange(grid.width, grid.width - wallWidth - player.getWidth()))
         exitX = grid.width - wallWidth - player.getWidth()
 
-    genInnerPath = random.choice((True,False))
-
-    genInnerPath = False #todo remove
-
     #Generate path from opposite walls
     if sorted([playerSide, exitSide]) == sorted([NORTH, SOUTH]):
+        genInnerPath = random.choice((True, False))
         if genInnerPath:
             pivotPoint = random.randint(wallHeight, grid.height - wallHeight - player.getHeight())
             path.extend( (y, playerX) for y in inclusiveRange(playerY, pivotPoint) )
             path.extend( (pivotPoint, x) for x in inclusiveRange(playerX, exitX) )
             path.extend( (y, exitX) for y in inclusiveRange(pivotPoint, exitY))
-            return path
         else:
             #outer path to opposite gate
             #go left or right
@@ -186,15 +182,14 @@ def getPlayerPath(player, outGate, grid, wallWidth, wallHeight):
             path.extend( (playerY, x) for x in inclusiveRange(playerX, vertPathX))
             path.extend( (y, vertPathX) for y in inclusiveRange(playerY, exitY))
             path.extend( (exitY, x) for x in inclusiveRange(vertPathX, exitX))
-            return path
 
-    if sorted([playerSide, exitSide]) == sorted([EAST, WEST]):
+    elif sorted([playerSide, exitSide]) == sorted([EAST, WEST]):
+        genInnerPath = random.choice((True, False))
         if genInnerPath:
             pivotXPoint = random.randint(wallWidth, grid.width - wallWidth - player.getWidth())
             path.extend( (playerY, x) for x in inclusiveRange(playerX, pivotXPoint))
             path.extend( (y, pivotXPoint) for y in inclusiveRange(playerY, exitY))
             path.extend( (exitY, x) for x in inclusiveRange(pivotXPoint, exitX))
-            return path
         else:
             #randomly up or down
             if random.choice("ud") == "u":
@@ -205,11 +200,18 @@ def getPlayerPath(player, outGate, grid, wallWidth, wallHeight):
             path.extend((y, playerX) for y in inclusiveRange(playerY, horizPathY))
             path.extend((horizPathY, x) for x in inclusiveRange(playerX, exitX))
             path.extend((y, exitX) for y in inclusiveRange(horizPathY, exitY))
-            return path
 
     # Generate cornered path
     else:
-        return path #todo implement corner paths
+        vertFirst = random.choice((True,False))
+        if vertFirst:
+            path.extend( (y, playerX) for y in inclusiveRange(playerY, exitY))
+            path.extend( (exitY, x) for x in inclusiveRange(playerX, exitX))
+        else:
+            path.extend( (playerY, x) for x in inclusiveRange(playerX, exitX))
+            path.extend( (y, exitX) for y in inclusiveRange(playerY, exitY))
+
+    return path
 
 
 
@@ -234,9 +236,6 @@ def getNewGameRoom(Game):
     horizWallDecor = random.choice([d for d in decor if d.height <= HORIZWALLMAXHEIGHT])
     playersSide = playerOnSide(Game.player, Game.grid)
     sidesWithGates = random.sample([side for side in SIDES if side != playersSide], random.randint(1, 3))
-
-    opposite = {NORTH:SOUTH, SOUTH:NORTH, EAST:WEST, WEST:EAST} #todo remove this test
-    sidesWithGates = [opposite.get(playersSide, NORTH)] #todo remove this test
 
     gates = []
     #west
