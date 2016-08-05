@@ -1,0 +1,37 @@
+{
+  "category": "Desert", 
+  "deadly": false, 
+  "colors": [
+    [
+      "KKKKK"
+    ], 
+    [
+      "KKKKK"
+    ], 
+    [
+      "KKKKK"
+    ]
+  ], 
+  "backColors": [
+    [
+      "YYYYY"
+    ], 
+    [
+      "YYYYY"
+    ], 
+    [
+      "YYYYY"
+    ]
+  ], 
+  "drawings": [
+    [
+      "(@)__"
+    ], 
+    [
+      "_(@)_"
+    ], 
+    [
+      "__(@)"
+    ]
+  ]
+}
