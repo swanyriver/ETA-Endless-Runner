@@ -307,6 +307,7 @@ def getNewGameRoom(Game):
     #### INSERT ENIMIES AVOIDING COLISIONS AND PLAYER PATH ###
     ##########################################################
     log(str(dir(Game)) + "\n")
+
     enimiesToPlace = Game.numBadGuysToPlace
     enimies = Game.gaLibrary.getBadGuys(category)
     avoidHitBoxMap = set(itertools.chain(*(e.getDeltaHitbox() for e in entities)))

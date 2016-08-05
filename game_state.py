@@ -96,6 +96,7 @@ class Grid():
 #gamestate class: set up gamestate and keeps track of user scores
 class Gamestate():
     STARTING_ENEMY_AMOUNT = 2
+    INCREASE_ENEMY_FREQUENCY = 4
     #sets up initial variables and grid
     def __init__(self):
         self.grid = Grid()
@@ -116,6 +117,7 @@ class Gamestate():
         self.player.set_x(self.grid.width / 2)
         self.player.set_y(self.grid.height / 2)
         self.numBadGuysToPlace = Gamestate.STARTING_ENEMY_AMOUNT
+        self.countDownToExtraBadGuy = Gamestate.INCREASE_ENEMY_FREQUENCY
 
         #add obstacles initially?
         self.entities = gameFunctions.getNewGameRoom(self)
@@ -154,7 +156,7 @@ class Gamestate():
         if playerCollision == gameEntities.COLLIDED:
             self.player.setYX(*cachedPlayerPos)
             print "(GAME-STATE): player has collided at pos:", self.player.getYX(), "with", collidedEntity
-            #todo don't send network message? return None and have network check before transmit
+            #todo (performance) don't send network message? return None and have network check before transmit
         elif playerCollision == gameEntities.DEAD:
             print "(GAME-STATE): player has died at pos:", self.player.getYX(), collidedEntity
             return gameEntities.JSONforNetwork(
@@ -168,6 +170,12 @@ class Gamestate():
 
         playerEnteredNewRoom = gameFunctions.playerLeftScreen(self)
         if playerEnteredNewRoom:
+
+            self.countDownToExtraBadGuy -= 1
+            if self.countDownToExtraBadGuy <= 0:
+                self.numBadGuysToPlace += 1
+                self.countDownToExtraBadGuy = Gamestate.INCREASE_ENEMY_FREQUENCY
+
             self.entities = gameFunctions.getNewGameRoom(self)
             return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
 
