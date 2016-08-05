@@ -131,8 +131,8 @@ def getPlayerPath(player, outGate, grid, wallWidth, wallHeight):
     playerSide = playerOnSide(player, grid)
     exitSide = gateOnSide(outGate, grid)
 
-    log("(GAME-GEN) player on: %s (%d,%d)  exit on: %s (%d,%d)\n"%(SIDENAMES[playerSide], playerY, playerX,
-                                                                   SIDENAMES[exitSide], exitY, exitX))
+    log("(GAME-GEN) player on: %s (%d,%d)  exit on: %s (%d,%d)\n"%(SIDENAMES.get(playerSide,None), playerY, playerX,
+                                                                   SIDENAMES.get(exitSide, None), exitY, exitX))
 
     path = []
     #get player clear of wall
@@ -214,7 +214,8 @@ def getPlayerPath(player, outGate, grid, wallWidth, wallHeight):
     return path
 
 
-
+def deltaHB(hb, y, x):
+    return [(hbY + y, hbX + x) for hbY,hbX in hb]
 
 
 def getNewGameRoom(Game):
@@ -224,7 +225,6 @@ def getNewGameRoom(Game):
     """
 
     decor = Game.gaLibrary.getAllDecorations()
-    enimies = Game.gaLibrary.getAllBadGuys()
     entities = []
 
 
@@ -265,8 +265,35 @@ def getNewGameRoom(Game):
                                wallWidth=vertWallDecor.width, wallHeight=horizWallDecor.height)
 
     #turn player path into hitbox path as wide and tall as player
-    pathHB = set(itertools.chain( (hbY + y, hbX + x) for hbY, hbX in Game.player.graphic.hitbox for y,x in playerPath))
-    entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB)
+    pathHB = set(itertools.chain(*(deltaHB(Game.player.graphic.hitbox, y, x) for y, x in playerPath)))
+
+    # used during debug to visualize reserved path
+    entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB) # todo remove this vis
+
+    ##########################################################
+    #### INSERT ENIMIES AVOIDING COLISIONS AND PLAYER PATH ###
+    ##########################################################
+    log(str(dir(Game)) + "\n")
+    enimiesToPlace = Game.numBadGuysToPlace
+    enimies = Game.gaLibrary.getAllBadGuys()
+    avoidHitBoxMap = set(itertools.chain(*(e.getDeltaHitbox() for e in entities)))
+    avoidHitBoxMap.update(pathHB)
+    negativeSpace = set((y,x)
+                        for y in range(Game.grid.height)
+                        for x in range(Game.grid.width)).difference(avoidHitBoxMap)
+
+    #place enimies while we have yet to place enough and any of our enimies will fit in the remaining space
+    while enimiesToPlace and enimies:
+        nextEnemy = random.choice(enimies)
+        availablePlacements = [ place for place in negativeSpace
+                                if not avoidHitBoxMap.intersection(deltaHB(nextEnemy.hitbox, *place))]
+        if not availablePlacements:
+            enimies.remove(nextEnemy)
+        else:
+            nextEnemyEntity = gameEntities.gameEntity(nextEnemy, *random.choice(availablePlacements))
+            entities.append(nextEnemyEntity)
+            avoidHitBoxMap.update(nextEnemyEntity.getDeltaHitbox())
+            enimiesToPlace -= 1
 
     return entities
 

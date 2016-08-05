@@ -94,10 +94,8 @@ class Grid():
 
 
 #gamestate class: set up gamestate and keeps track of user scores
-#and grid. I don't believe the Gamestate class itself stores instances
-#of any other class
 class Gamestate():
-
+    STARTING_ENEMY_AMOUNT = 2
     #sets up initial variables and grid
     def __init__(self):
         self.grid = Grid()
@@ -110,12 +108,15 @@ class Gamestate():
 
         self.player = Player()
 
+        # adds player to middle of grid
+        self.player.set_x(self.grid.width / 2)
+        self.player.set_y(self.grid.height / 2)
+        self.numBadGuysToPlace = Gamestate.STARTING_ENEMY_AMOUNT
+
         #add obstacles initially?
         self.entities = gameFunctions.getNewGameRoom(self)
 
-        #adds player to middle of grid
-        self.player.set_x(self.grid.width/2)
-        self.player.set_y(self.grid.height/2)
+
 
     #add timer
     def startTimer(self):
