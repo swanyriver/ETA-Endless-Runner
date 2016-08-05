@@ -117,7 +117,7 @@ def getHorizWall(asset, ypos, xstart, xend, withGate=False, withPlayer=False, pl
 
     if withGate:
         # ensure gate is not in corner
-        # todo, if there were very long elements this could trap the player
+        # NOTE, avoid adding decor that is longer than 1/4 grid width this could trap the player
         while xstart < horizWidth:
             output.append(gameEntities.gameEntity(asset, ypos, xstart))
             xstart += asset.width
@@ -306,8 +306,6 @@ def getNewGameRoom(Game):
     ##########################################################
     #### INSERT ENIMIES AVOIDING COLISIONS AND PLAYER PATH ###
     ##########################################################
-    log(str(dir(Game)) + "\n")
-
     enimiesToPlace = Game.numBadGuysToPlace
     enimies = Game.gaLibrary.getBadGuys(category)
     avoidHitBoxMap = set(itertools.chain(*(e.getDeltaHitbox() for e in entities)))

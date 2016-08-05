@@ -131,17 +131,6 @@ class DrawableEntity(gameEntities.gameEntity):
 class renderPlayer(DrawableEntity):
     def __init__(self, timingClock, colorDictionary):
         super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock, colorDictionary)
-        #todo create 2 or 4 way symmetrical drawings for character
-        #todo create rotated or flipped drawings of character arrays to load before drawing
-        #self.letfFaceDrawing =
-
-    # def getDrawing(self):
-    #     return super(renderPlayer, self).getDrawing()
-
-    def setYX(self, y, x):
-        #todo check new y and x and swap drawing for proper rotation
-        super(renderPlayer, self).setYX(y, x)
-
 
 
 class gameState():

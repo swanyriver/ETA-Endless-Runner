@@ -23,8 +23,6 @@ def main(argv):
     s.connect((TCP_IP, TCP_PORT))
     s.settimeout(.2)
 
-    userHandle="vertical"
-    #TODO determine if verticalClient or horizontalClient
 
     ############################################################
     ####  Start curses process #################################
@@ -40,7 +38,6 @@ def main(argv):
             msg = networkEnd.recv()
             log("(NET MSG-FROM-CURSES):" + str(type(msg)) + str(msg) + "\n")
 
-            #todo megan,  add handler tag?
             #send curses message to server
             s.sendall(msg + "\n")
 

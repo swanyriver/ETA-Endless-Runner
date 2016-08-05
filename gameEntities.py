@@ -103,7 +103,6 @@ def checkCollision(entities, player):
         print "(GAME-STATE COLLISION): player was killed by the entitie(s): ", whoKilledPlayer, \
             ((",   player also collided with: " + str(otherCollisions)) if otherCollisions else "")
 
-        #todo is this the best way of choosing the killer,  should we report all that had a hand in players demise
         return DEAD, whoKilledPlayer[0]
 
     # player has collided with something not deadly

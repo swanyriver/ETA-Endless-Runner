@@ -338,8 +338,22 @@ if __name__ == '__main__':
 
     elif "-f" in sys.argv and len(sys.argv) > sys.argv.index("-f"):
         print "testing file %s"%sys.argv[sys.argv.index("-f") + 1]
-        pass
-        #todo read and display one asset in curses, with color and hitbox
+
+        asset = createFromFileName(sys.argv[sys.argv.index("-f") + 1])
+
+        if not asset:
+            print "failed to load from file"
+            exit(1)
+
+        import cursesIO
+        import gameEntities
+        from multiprocessing import  Process, Pipe
+
+        cursesEnd, networkEnd = Pipe(duplex=True)
+        cursesProcess = Process(target=cursesIO.cursesEngine, args=(cursesEnd,))
+        cursesProcess.start()
+        networkEnd.send(gameEntities.JSONforNetwork(screen=[gameEntities.gameEntity(asset,0,0)]))
+
     else:
         graphics = getAllAssets(debug=True)
         player = getPlayerAsset(debug=True)

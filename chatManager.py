@@ -26,8 +26,9 @@ class ChatManager():
         self.chatDisplayWindow.refresh()
 
     def newChatMessage(self, msg):
-        #todo provide way to view old messages, or trim array
         self.chatMessages.append(msg)
+        if len(self.chatMessages) > self.chatDisplayLines:
+            self.chatMessages.pop(0)
         self.updateChatDisplay()
 
 
