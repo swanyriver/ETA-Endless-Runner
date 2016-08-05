@@ -317,8 +317,10 @@ def getNewGameRoom(Game):
     #place enimies while we have yet to place enough and any of our enimies will fit in the remaining space
     while enimiesToPlace and enimies:
         nextEnemy = random.choice(enimies)
-        availablePlacements = [ place for place in negativeSpace
-                                if not avoidHitBoxMap.intersection(deltaHB(nextEnemy.hitbox, *place))]
+        availablePlacements = [ (y,x) for y,x in negativeSpace
+                                if y + nextEnemy.height < Game.grid.height and
+                                x + nextEnemy.width < Game.grid.width and
+                                not avoidHitBoxMap.intersection(deltaHB(nextEnemy.hitbox, y,x))]
         if not availablePlacements:
             enimies.remove(nextEnemy)
         else:
