@@ -5,10 +5,29 @@ from log import log
 import graphicAssets
 
 # todo determine if character has entered new screen and update game layout
-#return None if player still on same screen
-#return (y,x) tuple for player on new screen
+#return False if player still on same screen
+#update player position and score if changed screen
 def playerLeftScreen(Game):
-    return None
+    halfW = Game.player.getWidth()//2
+    halfH = Game.player.getHeight()//2
+    if Game.player.y < halfH:
+        Game.roomsCrossed += 1
+        Game.player.set_y(Game.grid.height - halfH)
+        return True
+    elif Game.player.y > Game.grid.height - halfH:
+        Game.roomsCrossed += 1
+        Game.player.set_y(-halfH)
+        return True
+    elif Game.player.x < -halfW:
+        Game.roomsCrossed += 1
+        Game.player.set_x(Game.grid.width - halfW)
+        return True
+    elif Game.player.x > Game.grid.width - halfW:
+        Game.roomsCrossed += 1
+        Game.player.set_x(-halfW)
+        return True
+    else:
+        return False
 
 #todo generate random screens
 NORTH = 0

@@ -162,8 +162,8 @@ class Gamestate():
 
         # else: player has not collided, transmit updated position
 
-        playerPosOnNewScreen = gameFunctions.playerLeftScreen(self)
-        if playerPosOnNewScreen:
+        playerEnteredNewRoom = gameFunctions.playerLeftScreen(self)
+        if playerEnteredNewRoom:
             self.entities = gameFunctions.getNewGameRoom(self)
             return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
 
