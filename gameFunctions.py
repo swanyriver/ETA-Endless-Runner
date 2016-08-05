@@ -16,6 +16,7 @@ WEST = 3
 SIDES = [NORTH, SOUTH, EAST, WEST]
 VERTWALLMAXWIDTH = 5
 HORIZWALLMAXHEIGHT = 4
+GATESZIE = 1.25
 
 def playerOnSide(player, grid):
     """
@@ -50,7 +51,7 @@ def getVertWall(asset, xpos, ystart, yend, withGate=False, withPlayer=False, pla
         return output
 
     if withGate:
-        while yend-ystart-1 > player.getHeight():
+        while yend - ystart - asset.height - 1 > player.getHeight() * GATESZIE:
             if random.choice(["up","down"]) == "up":
                 output.append(gameEntities.gameEntity(asset, ystart, xpos))
                 ystart += asset.height
@@ -62,7 +63,7 @@ def getVertWall(asset, xpos, ystart, yend, withGate=False, withPlayer=False, pla
         return output
 
 
-def getHorizWall(asset, ypos, xstart, xend, withGate=False, withPlayer=False, player=None, gates=None):
+def getHorizWall(asset, ypos, xstart, xend, withGate=False, withPlayer=False, player=None, gates=None, horizWidth=None):
     if not withGate and not withPlayer:
         return [gameEntities.gameEntity(asset, ypos, x) for x in range(xstart, xend + 1, asset.width)]
     output = []
@@ -78,7 +79,17 @@ def getHorizWall(asset, ypos, xstart, xend, withGate=False, withPlayer=False, pl
         return output
 
     if withGate:
-        while xend - xstart - 1 > player.getWidth():
+        # ensure gate is not in corner
+        # todo, if there were very long elements this could trap the player
+        while xstart < horizWidth:
+            output.append(gameEntities.gameEntity(asset, ypos, xstart))
+            xstart += asset.width
+        rightCorner = xend - horizWidth
+        while xend > rightCorner:
+            xend -= asset.width
+            output.append(gameEntities.gameEntity(asset, ypos, xend))
+
+        while xend - xstart - asset.width - 1 > player.getWidth() * GATESZIE:
             if random.choice(["left", "right"]) == "left":
                 output.append(gameEntities.gameEntity(asset, ypos, xstart))
                 xstart += asset.width
@@ -121,11 +132,11 @@ def getNewGameRoom(Game):
     #north
     entities.extend(getHorizWall(horizWallDecor, 0, 0, Game.grid.width,
                                 withGate=NORTH in sidesWithGates, withPlayer=NORTH == playersSide, player=Game.player,
-                                gates=gates))
+                                gates=gates, horizWidth=horizWallDecor.width))
     #south
     entities.extend(getHorizWall(horizWallDecor, Game.grid.height - horizWallDecor.height, 0, Game.grid.width,
                                  withGate=SOUTH in sidesWithGates, withPlayer=SOUTH == playersSide, player=Game.player,
-                                 gates=gates))
+                                 gates=gates, horizWidth=horizWallDecor.width))
 
     return entities
 
