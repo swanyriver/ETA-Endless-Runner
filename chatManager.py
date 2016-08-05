@@ -45,7 +45,7 @@ class ChatManager():
     # retunrs (chat still in progress T/F, msg)
     def newChatCharInput(self, char_in_num):
 
-        log("(CHAT IN) %d\n"%char_in_num)
+        #log("(CHAT IN) %d\n"%char_in_num)
 
         if char_in_num == self.ESCAPE_KEY:
             self.chatCompose = []
