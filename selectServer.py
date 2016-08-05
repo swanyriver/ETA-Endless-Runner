@@ -40,7 +40,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
             received=""
             try:
-                received=self.request.recv(1024)
+                received=self.request.recv(5000)
                 received = received.strip()
                 #note:recv'd doesn't have to be 1024
             except:

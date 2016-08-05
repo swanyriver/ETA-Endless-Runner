@@ -15,7 +15,7 @@ def main(argv):
     #specify host name and port number on the command line.
     TCP_IP = sys.argv[1] 
     TCP_PORT = int(sys.argv[2])  
-    BUFFER_SIZE = 1024
+    BUFFER_SIZE = 5000
 
     #--connect to server--#
     #create sock stream and connect  
