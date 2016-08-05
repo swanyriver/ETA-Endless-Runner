@@ -157,13 +157,14 @@ class gameState():
     def newScreen(self, newEntities):
         self.entities = []
         for e in newEntities:
-            self.entities.append(DrawableEntity(
-                y=e['y'],
-                x=e['x'],
-                graphicAsset=self.assets[e['graphicAsset']],
-                timingClock=self.timingClock,
-                colorDictionary=self.colorDict
-            ))
+            if e['graphicAsset'] in self.assets:
+                self.entities.append(DrawableEntity(
+                    y=e['y'],
+                    x=e['x'],
+                    graphicAsset=self.assets[e['graphicAsset']],
+                    timingClock=self.timingClock,
+                    colorDictionary=self.colorDict
+                ))
         #character position is invalidated on new screen
         self.player.setYX(None, None)
         log("(CURSES-GAME): new screens entities: (%d) "%len(self.entities)

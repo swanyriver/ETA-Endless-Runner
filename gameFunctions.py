@@ -4,7 +4,6 @@ import itertools
 from log import log
 import graphicAssets
 
-# todo determine if character has entered new screen and update game layout
 #return False if player still on same screen
 #update player position and score if changed screen
 def playerLeftScreen(Game):
@@ -12,24 +11,24 @@ def playerLeftScreen(Game):
     halfH = Game.player.getHeight()//2
     if Game.player.y < -halfH:
         Game.roomsCrossed += 1
-        Game.player.set_y(Game.grid.height - halfH)
+        Game.player.set_y(Game.grid.height - halfH - 1)
         return True
-    elif Game.player.y > Game.grid.height - halfH - 1:
+    elif Game.player.y > Game.grid.height - halfH:
         Game.roomsCrossed += 1
         Game.player.set_y(-halfH)
         return True
     elif Game.player.x < -halfW:
         Game.roomsCrossed += 1
-        Game.player.set_x(Game.grid.width - halfW)
+        Game.player.set_x(Game.grid.width - halfW - 1)
         return True
-    elif Game.player.x > Game.grid.width - halfW - 1:
+    elif Game.player.x > Game.grid.width - halfW:
         Game.roomsCrossed += 1
         Game.player.set_x(-halfW)
         return True
     else:
         return False
 
-#todo generate random screens
+
 NORTH = 0
 SOUTH = 1
 EAST = 2
@@ -153,7 +152,7 @@ def getPlayerPath(player, outGate, grid, wallWidth, wallHeight):
                                                                    SIDENAMES.get(exitSide, None), exitY, exitX))
 
     path = []
-    #get player clear of wall
+    #reserve space through entrance
     if playerSide == NORTH:
         path.extend((y, playerX) for y in range(playerY, wallHeight+1))
         playerY = wallHeight
@@ -274,6 +273,19 @@ def getNewGameRoom(Game):
     entities.extend(getHorizWall(horizWallDecor, Game.grid.height - horizWallDecor.height, 0, Game.grid.width,
                                  withGate=SOUTH in sidesWithGates, withPlayer=SOUTH == playersSide, player=Game.player,
                                  gates=gates, horizWidth=horizWallDecor.width))
+
+
+    ##############################
+    ### BLOCK PLAYER RETREAT #####
+    ##############################
+    if playersSide == NORTH:
+        entities.append(gameEntities.gameEntity(Game.horizBlocker, Game.player.y-1, 0))
+    elif playersSide == SOUTH:
+        entities.append(gameEntities.gameEntity(Game.horizBlocker, Game.player.y + Game.player.getHeight(), 0))
+    elif playersSide == WEST:
+        entities.append(gameEntities.gameEntity(Game.vertBlocker, 0, Game.player.x -1))
+    elif playersSide == EAST:
+        entities.append(gameEntities.gameEntity(Game.vertBlocker, 0, Game.player.x + Game.player.getWidth()))
 
 
     ##########################################################

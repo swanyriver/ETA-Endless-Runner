@@ -108,6 +108,10 @@ class Gamestate():
 
         self.player = Player()
 
+        #used to block exit from entry door
+        self.horizBlocker = graphicAssets.getHorizBlocker()
+        self.vertBlocker = graphicAssets.getVertBlocker()
+
         # adds player to middle of grid
         self.player.set_x(self.grid.width / 2)
         self.player.set_y(self.grid.height / 2)

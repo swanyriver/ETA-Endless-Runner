@@ -248,21 +248,41 @@ def getAllAssets(debug = False):
     return GraphicsLibrary(graphicAssets)
 
 
+def getReservedAsset(FILE_LOC, debug = False):
+    if not os.path.isfile(FILE_LOC):
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset not present at: %s" % FILE_LOC)
+    asset = createFromFileName(FILE_LOC)
+    if not asset:
+        raise ParseAssetError("(CRITICAL ERROR): player graphic asset could not be parsed")
+
+    return asset
+
+
 def getPlayerAsset(debug = False):
     """
     :param debug: display verboase message on parse failure if true
     :rtype: GraphicAsset
     """
     PLAYER_FILE_LOC = DIRECTORY + "/reserved/player" + FILE_TYPE
-    if not os.path.isfile(PLAYER_FILE_LOC):
-        raise ParseAssetError("(CRITICAL ERROR): player graphic asset not present at: %s"%PLAYER_FILE_LOC)
+    return getReservedAsset(PLAYER_FILE_LOC)
 
-    player = createFromFileName(PLAYER_FILE_LOC)
 
-    if not player:
-        raise ParseAssetError("(CRITICAL ERROR): player graphic asset could not be parsed")
+def getVertBlocker(debug = False):
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype: GraphicAsset
+    """
+    blockerFile = DIRECTORY + "/reserved/vertBlocker" + FILE_TYPE
+    return getReservedAsset(blockerFile)
 
-    return player
+
+def getHorizBlocker(debug = False):
+    """
+    :param debug: display verboase message on parse failure if true
+    :rtype: GraphicAsset
+    """
+    blockerFile = DIRECTORY + "/reserved/horizBlocker" + FILE_TYPE
+    return getReservedAsset(blockerFile)
 
 
 def displayGraphicLibrary(ga=None):
