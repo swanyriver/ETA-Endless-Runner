@@ -84,7 +84,7 @@ class Grid():
     #initilized to default values for screen size
     #definitely can be changed with no apparent issue
     width = 80
-    height = 24
+    height = 20
 
     #function to set grid width and height
     def set_width(self, new_w):
@@ -92,18 +92,6 @@ class Grid():
     def set_height(self, new_h):
         self.height = new_h
 
-    #sends a json message to _________
-    #IS THIS RIGHT??
-    def update(self):
-        data = {'width': self.width, 'height': self.height}
-        json.dumps(data)
-        return
-
-    #recieves a json message from ______
-    def get_change_request(self, m):
-        req = json.loads(m)
-        #do something here..
-        return
 
 #gamestate class: set up gamestate and keeps track of user scores
 #and grid. I don't believe the Gamestate class itself stores instances

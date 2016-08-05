@@ -219,7 +219,7 @@ def getAllAssets(debug = False):
 
     """
     :param debug: display verboase message on parse failure if true
-    :rtype:dict[str, GraphicAsset]
+    :rtype:GraphicsLibrary
     """
 
     graphicAssets = {g.name:g for g in

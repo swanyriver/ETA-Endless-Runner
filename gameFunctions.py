@@ -9,55 +9,125 @@ def playerLeftScreen(Game):
     return None
 
 #todo generate random screens
+NORTH = 0
+SOUTH = 1
+EAST = 2
+WEST = 3
+SIDES = [NORTH, SOUTH, EAST, WEST]
+VERTWALLMAXWIDTH = 5
+HORIZWALLMAXHEIGHT = 4
+
+def playerOnSide(player, grid):
+    """
+    :type player: game_state.player
+    :param grid: game_state.Grid
+    :return:
+    """
+    y,x = player.getYX()
+    if y <= 0:
+        return NORTH
+    elif y >= grid.height - player.getHeight():
+        return SOUTH
+    elif x <= 0:
+        return WEST
+    elif x >= grid.width - player.getWidth():
+        return EAST
+
+
+def getVertWall(asset, xpos, ystart, yend, withGate=False, withPlayer=False, player=None, gates=None):
+    if not withGate and not withPlayer:
+        return [gameEntities.gameEntity(asset, y, xpos) for y in range(ystart, yend+1, asset.height)]
+    output = []
+    if withPlayer:
+        playerY, playerX = player.getYX()
+        while ystart + asset.height < playerY:
+            output.append(gameEntities.gameEntity(asset, ystart, xpos))
+            ystart += asset.height
+        ystart= playerY + player.getHeight()
+        while ystart < yend:
+            output.append(gameEntities.gameEntity(asset, ystart, xpos))
+            ystart += asset.height
+        return output
+
+    if withGate:
+        while yend-ystart-1 > player.getHeight():
+            if random.choice(["up","down"]) == "up":
+                output.append(gameEntities.gameEntity(asset, ystart, xpos))
+                ystart += asset.height
+            else:
+                yend -= asset.height
+                output.append(gameEntities.gameEntity(asset, yend, xpos))
+
+        gates.append((ystart,xpos))
+        return output
+
+
+def getHorizWall(asset, ypos, xstart, xend, withGate=False, withPlayer=False, player=None, gates=None):
+    if not withGate and not withPlayer:
+        return [gameEntities.gameEntity(asset, ypos, x) for x in range(xstart, xend + 1, asset.width)]
+    output = []
+    if withPlayer:
+        playerY, playerX = player.getYX()
+        while xstart + asset.width < playerX:
+            output.append(gameEntities.gameEntity(asset, ypos, xstart))
+            xstart += asset.width
+        xstart = playerX + player.getWidth()
+        while xstart < xend:
+            output.append(gameEntities.gameEntity(asset, ypos, xstart))
+            xstart += asset.width
+        return output
+
+    if withGate:
+        while xend - xstart - 1 > player.getWidth():
+            if random.choice(["left", "right"]) == "left":
+                output.append(gameEntities.gameEntity(asset, ypos, xstart))
+                xstart += asset.width
+            else:
+                xend -= asset.width
+                output.append(gameEntities.gameEntity(asset, ypos, xend))
+
+        gates.append((xstart, ypos))
+        return output
+
+
 def getNewGameRoom(Game):
-    #####How to use gameEntities to create a new screen################
-    # get 2 arrays of all deadly and non deadly graphics
-    #hazards = [g for g in Game.gaLibrary.values() if g.deadly]
-    #obstacles = [g for g in Game.gaLibrary.values() if not g.deadly]
+    """
+    :type Game: game_state.Gamestate
+    :return:
+    """
 
-    # check the height and width of a graphic
-    #hazards[0].heigth
-    #hazards[0].width
-
-    # #create an entitity from a graphic
-    # #an entity is just a graphic with an x,y position and helper methods
-    # #there can be many entities made from the same graphic
-    # badGuy =      gameEntities.gameEntity(hazards[0], y=10, x=20)
-    # otherBadGuy = gameEntities.gameEntity(hazards[0], y=10, x=30)
-    # badGuy = gameEntities.gameEntity(Game.gaLibrary['enemy'], y=10, x=20)
-    #
-    # #check the position, as well as bounding rectangle of an entity
-    # y,x = badGuy.getYX()
-    # top, left, bottom, right = badGuy.getBoundingRect()
-    # top = badGuy.getTopBound()
-    #
-    # isDeadly = badGuy.isDeadly()
-
-    # height, width, positions, bounding rectangles, deadly/not-deadly should be sufficient
-    # to create a scheme for programaticly/psuedo-randomly/noise generate a room of objects
-
-
-    #todo replace this random gen code with real code
-    ###################################################################
-    gaLibrary = Game.gaLibrary
-    NUM_GEN = 2
-    entities = []
-    # for k in [random.choice(gaLibrary.keys()) for _ in range(NUM_GEN)]:
-    #     y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
-    #     entities.append(gameEntities.gameEntity(gaLibrary[k], y, x))
-    hazards = Game.gaLibrary.getAllBadGuys()
     decor = Game.gaLibrary.getAllDecorations()
-    for _ in range(NUM_GEN):
-        y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
-        entities.append(gameEntities.gameEntity(random.choice(hazards), y, x))
+    enimies = Game.gaLibrary.getAllBadGuys()
 
-    for _ in range(NUM_GEN):
-        y, x = random.randint(0, 20 - 2), random.randint(0, 80 - 1)
-        entities.append(gameEntities.gameEntity(random.choice(decor), y, x))
+    vertWallDecor = random.choice([d for d in decor if d.width <= VERTWALLMAXWIDTH])
+    horizWallDecor = random.choice([d for d in decor if d.height <= HORIZWALLMAXHEIGHT])
 
-    #print entities
+    entities = []
+
+    playersSide = playerOnSide(Game.player, Game.grid)
+    sidesWithGates = random.sample([side for side in SIDES if side != playersSide], random.randint(1, 3))
+
+    gates = []
+
+    #west
+    entities.extend(getVertWall(vertWallDecor, 0, horizWallDecor.height, Game.grid.height - horizWallDecor.height,
+                                withGate=WEST in sidesWithGates, withPlayer= WEST == playersSide, player=Game.player,
+                                gates=gates))
+    #east
+    entities.extend(getVertWall(vertWallDecor, Game.grid.width - vertWallDecor.width,
+                                horizWallDecor.height, Game.grid.height - horizWallDecor.height,
+                                withGate=EAST in sidesWithGates, withPlayer=EAST == playersSide, player=Game.player,
+                                gates=gates))
+    #north
+    entities.extend(getHorizWall(horizWallDecor, 0, 0, Game.grid.width,
+                                withGate=NORTH in sidesWithGates, withPlayer=NORTH == playersSide, player=Game.player,
+                                gates=gates))
+    #south
+    entities.extend(getHorizWall(horizWallDecor, Game.grid.height - horizWallDecor.height, 0, Game.grid.width,
+                                 withGate=SOUTH in sidesWithGates, withPlayer=SOUTH == playersSide, player=Game.player,
+                                 gates=gates))
+
     return entities
-    ###################################################################
 
 
 #todo called when player dies,  prepeare dict with any relevant info, score, reason for dying
