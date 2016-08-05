@@ -10,11 +10,11 @@ import graphicAssets
 def playerLeftScreen(Game):
     halfW = Game.player.getWidth()//2
     halfH = Game.player.getHeight()//2
-    if Game.player.y < halfH:
+    if Game.player.y < -halfH:
         Game.roomsCrossed += 1
         Game.player.set_y(Game.grid.height - halfH)
         return True
-    elif Game.player.y > Game.grid.height - halfH:
+    elif Game.player.y > Game.grid.height - halfH - 1:
         Game.roomsCrossed += 1
         Game.player.set_y(-halfH)
         return True
@@ -22,7 +22,7 @@ def playerLeftScreen(Game):
         Game.roomsCrossed += 1
         Game.player.set_x(Game.grid.width - halfW)
         return True
-    elif Game.player.x > Game.grid.width - halfW:
+    elif Game.player.x > Game.grid.width - halfW - 1:
         Game.roomsCrossed += 1
         Game.player.set_x(-halfW)
         return True

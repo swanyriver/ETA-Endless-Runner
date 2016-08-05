@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
 import SocketServer
 import game_state
+from networkKeys import *
 
 #Server
 #references : https://docs.python.org/2/library/socketserver.html
@@ -21,14 +22,19 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         self.request.sendall(game.get_update()+ "\n")
 
         while serverActive:
-            received=self.request.recv(1024)
+            received=self.request.recv(5000)
             if received==0:
                 serverActive=False
             else:
                 data = received.strip()
                 print "recieved from " + str(self.client_address[0]) + ": " + data
 
-                #todo intercept and forward chat message instead of send to game
+                if not data:
+                    continue
+
+                if data[0] == ACTIONS.chat:
+                    print "CHAT RECEIVED:", data[1:]
+                    continue
 
                 #request to move player
                 updatedState = game.get_change_request(data)
