@@ -97,6 +97,9 @@ class Grid():
 class Gamestate():
     STARTING_ENEMY_AMOUNT = 2
     INCREASE_ENEMY_FREQUENCY = 4
+    SCORES_TO_STORE = 10
+    FILENAME = "scores.json"
+
     #sets up initial variables and grid
     def __init__(self):
         self.grid = Grid()
@@ -119,8 +122,14 @@ class Gamestate():
         self.numBadGuysToPlace = Gamestate.STARTING_ENEMY_AMOUNT
         self.countDownToExtraBadGuy = Gamestate.INCREASE_ENEMY_FREQUENCY
 
+        self.userNames = []
+
         #add obstacles initially?
         self.entities = gameFunctions.getNewGameRoom(self)
+
+
+
+    #def getScoresFromFile(self):
 
 
 
@@ -159,6 +168,15 @@ class Gamestate():
             #todo (performance) don't send network message? return None and have network check before transmit
         elif playerCollision == gameEntities.DEAD:
             print "(GAME-STATE): player has died at pos:", self.player.getYX(), collidedEntity
+
+            print "USER NAMES:",  self.userNames
+
+            #retrieve scores
+            #update scores
+            #save scores
+
+            #transmit scores
+
             return gameEntities.JSONforNetwork(
                 charX=self.player.x,
                 charY=self.player.y,
@@ -181,4 +199,7 @@ class Gamestate():
 
         else:
             return gameEntities.JSONforNetwork(charX=self.player.x, charY=self.player.y)
+
+    def addUserName(self, name):
+        self.userNames.append(name)
 

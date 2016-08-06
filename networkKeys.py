@@ -11,7 +11,14 @@ class ACTIONS():
     right = "d"
     quit = "q"
     chat = "/"
+    name = "#"
 
 class GAMEOVER():
     kScore = "score"
     kKiller = "killer"
+
+
+class SCORES():
+    kNames = "names"
+    kScore = "score"
+    kCauseOfDeath = "killer"

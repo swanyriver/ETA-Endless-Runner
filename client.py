@@ -6,9 +6,24 @@ import socket
 import cursesIO
 from multiprocessing import Process, Pipe
 from log import log
+import networkKeys
 
 #TODO currently breaksif newline entered first
 
+def getUsersHandle():
+   print("What would you like to your handle, it must be 10 characters or less")
+
+   person = raw_input('Enter your name: ')
+   #check if handle is less than 10 char
+   if(len(person) > 10):
+       print("error! requested handle is too long")
+       person=getUsersHandle();
+
+   #check if there are spaces in handle
+   if(" " in person):
+       print("There's a space in your username")
+       person=getUsersHandle();
+   return person
 
 ##-- MAIN --##
 def main(argv):
@@ -23,6 +38,8 @@ def main(argv):
     s.connect((TCP_IP, TCP_PORT))
     s.settimeout(.2)
 
+    name = getUsersHandle()
+    s.sendall(networkKeys.ACTIONS.name + name + "\n")
 
     ############################################################
     ####  Start curses process #################################

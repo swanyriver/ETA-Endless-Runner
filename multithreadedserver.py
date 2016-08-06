@@ -72,6 +72,11 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                         if threadIdent != cur_thread.ident: theirmessageQue.append(received)
                     lock.release()
 
+                if received[0] == networkKeys.ACTIONS.name:
+                    lock.acquire()
+                    game.addUserName(received[1:].strip())
+                    lock.release()
+
                 elif cur_thread.ident in allowedActionsForThreads and \
                                 received in allowedActionsForThreads[cur_thread.ident]:
                     lock.acquire()
