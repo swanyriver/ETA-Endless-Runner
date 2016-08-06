@@ -8,7 +8,6 @@ from multiprocessing import Process, Pipe
 from log import log
 import networkKeys
 
-#TODO currently breaksif newline entered first
 
 def getUsersHandle():
    print("What would you like to your handle, it must be 10 characters or less")

@@ -45,7 +45,6 @@ class gameEntity(object):
     def getWidth(self):
         return self.graphic.width
 
-    #todo (performance) (only if cached hitmap is not implemented) cache delta hitbox, use this method as wrapper to check cache
     def getDeltaHitbox(self):
         return [(y + self.y, x + self.x) for y, x in self.graphic.hitbox]
 
@@ -75,9 +74,6 @@ def checkCollision(entities, player):
     :type player: gameEntity
     :return : tuple (COLLIDED | DEAD | None,  <gameEntity> collided with | None)
     """
-
-    # todo (performance) create hitbox proccessing class to store calced hitboxes and compare
-    # todo (performance) only re-calc hitbox map when entitys have changed, and compare entity list before regen map
 
     # y,x points are added to a dictionary as keys, with values being entity that is occupying that pixel
     #   added in order as order defines draw & collision order with last item in array being drawn on-top and first to

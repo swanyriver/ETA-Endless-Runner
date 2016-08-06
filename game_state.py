@@ -185,7 +185,6 @@ class Gamestate():
         if playerCollision == gameEntities.COLLIDED:
             self.player.setYX(*cachedPlayerPos)
             print "(GAME-STATE): player has collided at pos:", self.player.getYX(), "with", collidedEntity
-            #todo (performance) don't send network message? return None and have network check before transmit
         elif playerCollision == gameEntities.DEAD:
             print "(GAME-STATE): player has died at pos:", self.player.getYX(), collidedEntity
 
