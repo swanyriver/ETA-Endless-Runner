@@ -32,7 +32,7 @@ class GraphicsLibrary(dict):
         return [g for g in self.values() if not g.deadly and g.category == category]
 
     def getBadGuys(self, category):
-        return [g for g in self.values() if g.deadly and g.category == category]
+        return [g for g in self.values() if g.deadly and (g.category == category or g.category == "Enemy")]
 
 
 #debugging method
