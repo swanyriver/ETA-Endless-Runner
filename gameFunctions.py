@@ -10,6 +10,7 @@ from networkKeys import *
 def playerLeftScreen(Game):
     halfW = Game.player.getWidth()//2
     halfH = Game.player.getHeight()//2
+
     if Game.player.y < -halfH:
         Game.roomsCrossed += 1
         Game.player.set_y(Game.grid.height - halfH - 1)
@@ -19,10 +20,22 @@ def playerLeftScreen(Game):
         Game.player.set_y(-halfH)
         return True
     elif Game.player.x < -halfW:
+        # ensure that player is not trapped in corner gate
+        if Game.player.y < graphicAssets.HORIZWALLMAXHEIGHT:
+            Game.player.set_y(graphicAssets.HORIZWALLMAXHEIGHT)
+        if Game.player.y + Game.player.getHeight() > Game.grid.height - graphicAssets.HORIZWALLMAXHEIGHT:
+            Game.player.set_y(Game.grid.height - graphicAssets.HORIZWALLMAXHEIGHT - Game.player.getHeight())
+
         Game.roomsCrossed += 1
         Game.player.set_x(Game.grid.width - halfW - 1)
         return True
     elif Game.player.x > Game.grid.width - halfW:
+        # ensure that player is not trapped in corner gate
+        if Game.player.y < graphicAssets.HORIZWALLMAXHEIGHT:
+            Game.player.set_y(graphicAssets.HORIZWALLMAXHEIGHT)
+        if Game.player.y + Game.player.getHeight() > Game.grid.height - graphicAssets.HORIZWALLMAXHEIGHT:
+            Game.player.set_y(Game.grid.height - graphicAssets.HORIZWALLMAXHEIGHT - Game.player.getHeight())
+
         Game.roomsCrossed += 1
         Game.player.set_x(-halfW)
         return True
@@ -309,6 +322,7 @@ def getNewGameRoom(Game):
     enimiesToPlace = Game.numBadGuysToPlace
     enimies = Game.gaLibrary.getBadGuys(category)
     avoidHitBoxMap = set(itertools.chain(*(e.getDeltaHitbox() for e in entities)))
+    avoidHitBoxMap.update(Game.player.getDeltaHitbox())
     avoidHitBoxMap.update(pathHB)
     negativeSpace = set((y,x)
                         for y in range(Game.grid.height)
@@ -336,6 +350,7 @@ def getGameOverDictionary(game, killer, highScores):
     """
     :type game: game_state.Gamestate
     :type killer: gameEntities.gameEntity
+    :type highScores: [{}]
     :return:
     """
     return {
