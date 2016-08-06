@@ -317,10 +317,10 @@ def getNewGameRoom(Game):
     ###############################################################
 
     ##########################################################
-    #### INSERT ENIMIES AVOIDING COLISIONS AND PLAYER PATH ###
+    #### INSERT ENEMIES AVOIDING COLLISIONS AND PLAYER PATH ###
     ##########################################################
-    enimiesToPlace = Game.numBadGuysToPlace
-    enimies = Game.gaLibrary.getBadGuys(category)
+    enemiesToPlace = Game.numBadGuysToPlace
+    enemies = Game.gaLibrary.getBadGuys(category)
     avoidHitBoxMap = set(itertools.chain(*(e.getDeltaHitbox() for e in entities)))
     avoidHitBoxMap.update(Game.player.getDeltaHitbox())
     avoidHitBoxMap.update(pathHB)
@@ -329,19 +329,19 @@ def getNewGameRoom(Game):
                         for x in range(Game.grid.width)).difference(avoidHitBoxMap)
 
     #place enimies while we have yet to place enough and any of our enimies will fit in the remaining space
-    while enimiesToPlace and enimies:
-        nextEnemy = random.choice(enimies)
+    while enemiesToPlace and enemies:
+        nextEnemy = random.choice(enemies)
         availablePlacements = [ (y,x) for y,x in negativeSpace
                                 if y + nextEnemy.height < Game.grid.height and
                                 x + nextEnemy.width < Game.grid.width and
                                 not avoidHitBoxMap.intersection(deltaHB(nextEnemy.hitbox, y,x))]
         if not availablePlacements:
-            enimies.remove(nextEnemy)
+            enemies.remove(nextEnemy)
         else:
             nextEnemyEntity = gameEntities.gameEntity(nextEnemy, *random.choice(availablePlacements))
             entities.append(nextEnemyEntity)
             avoidHitBoxMap.update(nextEnemyEntity.getDeltaHitbox())
-            enimiesToPlace -= 1
+            enemiesToPlace -= 1
 
     return entities
 
