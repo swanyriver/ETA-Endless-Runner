@@ -3,7 +3,7 @@ import json
 import gameEntities
 import graphicAssets
 import gameFunctions
-
+from networkKeys import *
 
 #player class: initializes location to outside the grid
 #player class is now a subclass of gameEntitiy and iherits the folowing properties/methods
@@ -98,7 +98,7 @@ class Gamestate():
     STARTING_ENEMY_AMOUNT = 2
     INCREASE_ENEMY_FREQUENCY = 4
     SCORES_TO_STORE = 10
-    FILENAME = "scores.json"
+    SCORE_FILENAME = "scores.json"
 
     #sets up initial variables and grid
     def __init__(self):
@@ -129,8 +129,28 @@ class Gamestate():
 
 
 
-    #def getScoresFromFile(self):
+    def getScoresFromFile(self):
+        try:
+            return json.load(open(Gamestate.SCORE_FILENAME))
+        except:
+            return []
 
+    def updateScore(self, loadedScores, killerName):
+        newScore = {
+            SCORES.kScore: self.roomsCrossed,
+            SCORES.kNames: " & ".join(self.userNames),
+            SCORES.kCauseOfDeath: killerName
+        }
+
+        loadedScores.append(newScore)
+        loadedScores.sort(key=lambda x:x.get(SCORES.kScore, 0), reverse=True)
+
+        return loadedScores[:Gamestate.SCORES_TO_STORE]
+
+    def saveScores(self, scores):
+        with open(Gamestate.SCORE_FILENAME, "w") as scoreFile:
+            scoreFile.write(json.dumps(scores, indent=2) + "\n")
+            scoreFile.close()
 
 
     #add timer
@@ -172,8 +192,11 @@ class Gamestate():
             print "USER NAMES:",  self.userNames
 
             #retrieve scores
+            scores = self.getScoresFromFile()
             #update scores
+            updatedScores = self.updateScore(scores, collidedEntity.graphic.name)
             #save scores
+            self.saveScores(updatedScores)
 
             #transmit scores
 
@@ -181,7 +204,7 @@ class Gamestate():
                 charX=self.player.x,
                 charY=self.player.y,
                 screen=[collidedEntity],
-                gameOver=gameFunctions.getGameOverDictionary(self, collidedEntity))
+                gameOver=gameFunctions.getGameOverDictionary(self, collidedEntity, updatedScores))
 
 
         # else: player has not collided, transmit updated position

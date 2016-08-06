@@ -1,0 +1,22 @@
+[
+  {
+    "killer": "snail", 
+    "score": 8, 
+    "names": "brandon & Doris"
+  }, 
+  {
+    "killer": "ghost", 
+    "score": 5, 
+    "names": "sue & sally"
+  }, 
+  {
+    "killer": "ghost", 
+    "score": 4, 
+    "names": "steve & allen"
+  }, 
+  {
+    "killer": "ghost", 
+    "score": 2, 
+    "names": "brandon & sue"
+  }
+]

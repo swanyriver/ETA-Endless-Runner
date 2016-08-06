@@ -14,8 +14,9 @@ class ACTIONS():
     name = "#"
 
 class GAMEOVER():
-    kScore = "score"
+    kCurentScore = "score"
     kKiller = "killer"
+    kHighScores = "highScores"
 
 
 class SCORES():

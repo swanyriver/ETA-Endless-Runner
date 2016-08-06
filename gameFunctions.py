@@ -332,7 +332,7 @@ def getNewGameRoom(Game):
     return entities
 
 
-def getGameOverDictionary(game, killer):
+def getGameOverDictionary(game, killer, highScores):
     """
     :type game: game_state.Gamestate
     :type killer: gameEntities.gameEntity
@@ -340,5 +340,6 @@ def getGameOverDictionary(game, killer):
     """
     return {
         GAMEOVER.kKiller: killer.graphic.name,
-        GAMEOVER.kScore: game.roomsCrossed
+        GAMEOVER.kCurentScore: game.roomsCrossed,
+        GAMEOVER.kHighScores: highScores
     }
