@@ -1,5 +1,7 @@
 import threading
 import SocketServer
+import sys
+
 import networkKeys
 import game_state
 
@@ -123,6 +125,11 @@ if __name__ == "__main__":
         [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right],
         [networkKeys.ACTIONS.up, networkKeys.ACTIONS.down],
     ]
+
+    if "-s" in sys.argv:
+        availableActionSets = [
+            [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right, networkKeys.ACTIONS.up, networkKeys.ACTIONS.down]
+        ]
 
     threadOutgoingMessages = {}
 
