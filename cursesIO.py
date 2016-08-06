@@ -328,6 +328,36 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
                         break
 
 
+def displayEndOfGameMessages(gameOverMessage):
+    width = 80
+    ch = "-"
+    line = ch * width
+    gameOver = " GAME OVER "
+    highscoreST = " HIGH SCORES "
+    gameOverLine = ch * ((width-len(gameOver))//2) + gameOver + ch * ((width-len(gameOver) + 1)//2)
+    highScoreLine = ch * ((width - len(highscoreST)) // 2) + highscoreST + ch * ((width - len(highscoreST) + 1) // 2)
+
+    print line
+    print gameOverLine
+    print line
+    print "You Were Killed by: %s"%gameOverMessage.get(GAMEOVER.kKiller, "Unknown")
+    print "Your Score: %d"%gameOverMessage.get(GAMEOVER.kCurentScore, 0)
+
+    # retrieve array of all properly formed score dictionaries
+    highscores = [ score for score in gameOverMessage.get(GAMEOVER.kHighScores, [])
+                   if all(k in score for k in (SCORES.kNames, SCORES.kScore, SCORES.kCauseOfDeath))]
+
+    if highscores:
+        print ""
+        print line
+        print highScoreLine
+        print line
+
+        for scoreDict in highscores:
+            print "Player(s): %s   Score %s   KilledBy: %s"%( str(scoreDict[SCORES.kNames]),
+                                                              str(scoreDict[SCORES.kScore]),
+                                                              str(scoreDict[SCORES.kCauseOfDeath]) )
+
 
 
 def cursesEngine(networkPipe):
@@ -342,9 +372,12 @@ def cursesEngine(networkPipe):
     localGame = gameState(graphicAssets.getAllAssets(), GAMEWINDOW_ROWS, GAMEWINDOW_COLS, colorDict)
 
     gameOverMessage = constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan)
-
     exitCurses(gameWindow)
-    #todo check if game over message or client quit
-    print str(gameOverMessage)
     log("(CURSES): curses screen exited\n")
+
+    if gameOverMessage:
+        displayEndOfGameMessages(gameOverMessage)
+    else :
+        print "Game exited by player,  Good Luck next time!"
+
 
