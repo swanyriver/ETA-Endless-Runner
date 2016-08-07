@@ -348,16 +348,46 @@ def displayEndOfGameMessages(gameOverMessage):
                    if all(k in score for k in (SCORES.kNames, SCORES.kScore, SCORES.kCauseOfDeath))]
 
     if highscores:
+
+        NAME_HEADING = "NAMES"
+        nameWidth = max(len(NAME_HEADING), max(len(str(sd[SCORES.kNames])) for sd in highscores))
+        namePos = len("|| ")
+
+        KILLER_HEADING = "KILLED BY"
+        killerWidth = max(len(KILLER_HEADING), max(len(str(sd[SCORES.kCauseOfDeath])) for sd in highscores))
+        killerPos = namePos + nameWidth + len(" | ")
+
+        SCORE_HEADING = "SCORE"
+        scoreWidth = max(len(SCORE_HEADING), max(len(str(sd[SCORES.kScore])) for sd in highscores))
+        scorePos = width - len(" ||") - scoreWidth- 1
+
+        templateLine = [" "] * width
+        templateLine[:3] = "||"
+        templateLine[-2:] = "||"
+        templateLine[killerPos-2:killerPos-1] = "|"
+        templateLine[scorePos-2:scorePos-1] = "|"
+
+        categoryLine = list(templateLine)
+        for st, pos in ( (NAME_HEADING,namePos), (KILLER_HEADING, killerPos), (SCORE_HEADING, scorePos)):
+            categoryLine[pos:pos+len(st)] = st
+        categoryLine = "".join(categoryLine)
+
         print ""
         print line
         print highScoreLine
         print line
+        print categoryLine
+        print line
 
         for scoreDict in highscores:
-            print "Player(s): %s   Score %s   KilledBy: %s"%( str(scoreDict[SCORES.kNames]),
-                                                              str(scoreDict[SCORES.kScore]),
-                                                              str(scoreDict[SCORES.kCauseOfDeath]) )
+            scoreline = list(templateLine)
+            for st, pos in ((scoreDict[SCORES.kNames], namePos),
+                            (scoreDict[SCORES.kCauseOfDeath], killerPos),
+                            (str(scoreDict[SCORES.kScore]), scorePos)):
+                scoreline[pos:pos + len(st)] = st
+            print "".join(scoreline)
 
+        print line
 
 
 def cursesEngine(networkPipe):
