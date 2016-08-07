@@ -4,6 +4,7 @@ from log import log
 import graphicAssets
 import gameEntities
 import json
+import random
 from networkKeys import *
 from collections import namedtuple
 from chatManager import ChatManager
@@ -133,6 +134,7 @@ class renderPlayer(DrawableEntity):
         super(renderPlayer, self).__init__(graphicAssets.getPlayerAsset(), None, None, timingClock, colorDictionary)
 
 
+# local representation of game state stored on server, updated to reflect changes upon network messages
 class gameState():
     def __init__(self, assets, maxY, maxX, colorDict):
         self.maxX = maxX
@@ -182,6 +184,47 @@ class gameState():
             self.drawEntity(self.player, screen)
 
         screen.refresh()
+
+    def deathAnimation(self, screen):
+        interval = .75
+        minInterval = .2
+        factor = .7
+        PLAYER_DISSOLVE_INTERVAL = .5
+        WAIT_IN_BLACKNESS = 1
+
+        if len(self.entities) == 1:
+            enemy = self.entities[0]
+
+            #Blink out enemy
+            enemyOnTop = False
+            while interval > minInterval:
+                screen.erase()
+                self.drawEntity(self.player if enemyOnTop else enemy, screen)
+                self.drawEntity(enemy if enemyOnTop else self.player, screen)
+                screen.refresh()
+                time.sleep(interval)
+                interval *= factor
+                enemyOnTop = not enemyOnTop
+
+        else:
+            log("(CURSES-RENDER-DEATH) ERROR screen msg at end of game contained more than one entity\n")
+            log("(CURSES-RENDER-DEATH) ERROR screen should only contain enemy that killed player\n")
+
+        #slow disolve player graphic
+        playerPixels = filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX, self.player.getDrawing())
+        while playerPixels:
+            screen.erase()
+            for pixel in playerPixels:
+                try: screen.addch(*pixel)
+                except curses.error: pass
+            screen.refresh()
+            time.sleep(PLAYER_DISSOLVE_INTERVAL)
+            playerPixels.remove(random.choice(playerPixels))
+
+        #pause on empty screen
+        screen.erase()
+        screen.refresh()
+        time.sleep(WAIT_IN_BLACKNESS)
 
 
 def initColors():
@@ -249,13 +292,6 @@ def checkForUpdate(recPipe, localGame, chatMan):
             continue
 
         #process parsed network message
-        #end parsing immediately on game over message
-        if kGAMEOVER in networkMessage:
-            #todo death animation with returned screen
-            log("(CURSES NET-IN GAME-OVER): killer: %s  gameoverDict:%s\n"%(
-                str(networkMessage.get(kSCREEN, None)), str(networkMessage[kGAMEOVER])) )
-            return True, networkMessage[kGAMEOVER]
-
         if kSCREEN in networkMessage:
             entitiesArray = networkMessage[kSCREEN]
             if not isinstance(entitiesArray, list):
@@ -278,6 +314,11 @@ def checkForUpdate(recPipe, localGame, chatMan):
             else:
                 log("(CURSES NET-IN ERROR): player position dict badly formed")
 
+        if kGAMEOVER in networkMessage:
+            log("(CURSES NET-IN GAME-OVER): killer: %s  gameoverDict:%s\n" % (
+                str(networkMessage.get(kSCREEN, None)), str(networkMessage[kGAMEOVER])))
+            return True, networkMessage[kGAMEOVER]
+
     return False, None
 
 # input is captured constantly but screen refreshes on interval
@@ -294,6 +335,8 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
         # check for message from network
         gameOver, message = checkForUpdate(networkPipe, localGame, chatMan)
         if gameOver:
+            chatMan.eraseAll()
+            localGame.deathAnimation(gameWindow)
             return message
 
         # redraw game state acording to frame rate

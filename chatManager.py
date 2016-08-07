@@ -82,3 +82,9 @@ class ChatManager():
             self.chatEntryLine.refresh()
 
         return True, None
+
+    def eraseAll(self):
+        self.chatEntryLine.erase()
+        self.chatEntryLine.refresh()
+        self.chatDisplayWindow.erase()
+        self.chatDisplayWindow.refresh()
