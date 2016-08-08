@@ -267,12 +267,21 @@ def respondToInput(in_char_num, sendpipe):
         sendpipe.send(action)
 
 
-def checkForUpdate(recPipe, localGame, chatMan):
+def checkForUpdate(recPipe, localGame, chatMan, messagePieces):
 
     while recPipe.poll():
-        networkMessage = recPipe.recv()
-        if not networkMessage:
+        nextPiece = recPipe.recv()
+        messagePieces.append(nextPiece)
+
+        if not nextPiece or nextPiece[-1] != "\n":
             continue
+        else:
+            networkMessage = "".join(filter(None,messagePieces))
+            if len(messagePieces) > 1:
+                log("(CURSES NET-IN JOINED MESSAGE) length:%d, from %d pieces\n"%(len(networkMessage),
+                                                                                  len(messagePieces)))
+            del messagePieces[:]
+            log("(CURSES NET-IN MSG): %s\n"%str(repr(networkMessage)))
 
         #intercept chat messages
         if networkMessage[0] == ACTIONS.chat:
@@ -281,7 +290,6 @@ def checkForUpdate(recPipe, localGame, chatMan):
             chatMan.newChatMessage(networkMessage[1:])
             return False, None
 
-        log("(CURSES NET-IN): " + str(networkMessage) + "\n")
         try:
             networkMessage = json.loads(networkMessage)
         except ValueError:
@@ -328,12 +336,13 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
 
     lastRefresh = 0
     isTypingChatMessage = False
+    messagePieces = []
 
     while True:
         ### primary input and output loop ###
 
         # check for message from network
-        gameOver, message = checkForUpdate(networkPipe, localGame, chatMan)
+        gameOver, message = checkForUpdate(networkPipe, localGame, chatMan, messagePieces)
         if gameOver:
             chatMan.eraseAll()
             localGame.deathAnimation(gameWindow)
