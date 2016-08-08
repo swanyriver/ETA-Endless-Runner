@@ -148,11 +148,11 @@ class gameState():
     def newScreen(self, newEntities):
         self.entities = []
         for e in newEntities:
-            if e['graphicAsset'] in self.assets:
+            if e[ENTITY.kGraphicAsset] in self.assets:
                 self.entities.append(DrawableEntity(
                     y=e['y'],
                     x=e['x'],
-                    graphicAsset=self.assets[e['graphicAsset']],
+                    graphicAsset=self.assets[e[ENTITY.kGraphicAsset]],
                     timingClock=self.timingClock,
                     colorDictionary=self.colorDict
                 ))
