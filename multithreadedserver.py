@@ -51,9 +51,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
             received=""
             try:
-                received=self.request.recv(1024)
+                received=self.request.recv(5000)
                 received = received.strip()
-                #note:recv'd doesn't have to be 1024
             except:
                 pass
 
@@ -114,6 +113,7 @@ if __name__ == "__main__":
     ip, port = server.server_address
 
     #print port so client can connect
+    print "host:127.0.0.1 local"
     print port
 
     #create a new game state
