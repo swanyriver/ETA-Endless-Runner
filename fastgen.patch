@@ -1,0 +1,13 @@
+diff --git a/Unit-Tests/testRoomGenerate.py b/Unit-Tests/testRoomGenerate.py
+index ec9d07f..94da795 100644
+--- a/Unit-Tests/testRoomGenerate.py
++++ b/Unit-Tests/testRoomGenerate.py
+@@ -20,7 +20,7 @@ f = open(os.devnull, 'w')
+ sys.stderr = f
+ 
+ # In seconds
+-REFRESH_INTERVAL = 1.5
++REFRESH_INTERVAL = .4
+ INCREASE_ENEMY_COUNT = 3
+ 
+ 

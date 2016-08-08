@@ -1,0 +1,13 @@
+diff --git a/gameFunctions.py b/gameFunctions.py
+index 89ce153..8d4f6d6 100644
+--- a/gameFunctions.py
++++ b/gameFunctions.py
+@@ -313,7 +313,7 @@ def getNewGameRoom(Game):
+     pathHB = set(itertools.chain(*(deltaHB(Game.player.graphic.hitbox, y, x) for y, x in playerPath)))
+ 
+     #### DEBUG ONLY used during debug to visualize reserved path
+-    entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB)
++    #entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB)
+     ###############################################################
+ 
+     ##########################################################

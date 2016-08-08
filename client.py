@@ -37,7 +37,7 @@ def main(argv):
     s.connect((TCP_IP, TCP_PORT))
     s.settimeout(.2)
 
-    name = getUsersHandle()
+    name = "TESTER"
     s.sendall(networkKeys.ACTIONS.name + name + "\n")
 
     ############################################################

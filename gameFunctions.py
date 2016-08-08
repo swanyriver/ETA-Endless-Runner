@@ -313,7 +313,7 @@ def getNewGameRoom(Game):
     pathHB = set(itertools.chain(*(deltaHB(Game.player.graphic.hitbox, y, x) for y, x in playerPath)))
 
     #### DEBUG ONLY used during debug to visualize reserved path
-    #entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB)
+    entities.extend(gameEntities.gameEntity(Game.gaLibrary['debug'], y, x) for y,x in pathHB)
     ###############################################################
 
     ##########################################################

@@ -19,8 +19,8 @@ import sys
 f = open(os.devnull, 'w')
 sys.stderr = f
 
-# in Seconds
-REFRESH_INTERVAL = .5
+# In seconds
+REFRESH_INTERVAL = 1.5
 INCREASE_ENEMY_COUNT = 3
 
 

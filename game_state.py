@@ -165,7 +165,9 @@ class Gamestate():
     # called once at begining of game to create first game rendering
     # thenceforth called by game state after each player move and result returned to Network out
     def get_update(self):
-        return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
+        msg = gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
+        self.entities = [e for e in self.entities if e.graphic.name != "debug"]
+        return msg
 
     #recieves a character from client
     def get_change_request(self, msg):
@@ -217,7 +219,9 @@ class Gamestate():
                 self.countDownToExtraBadGuy = Gamestate.INCREASE_ENEMY_FREQUENCY
 
             self.entities = gameFunctions.getNewGameRoom(self)
-            return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
+            msg = gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)
+            self.entities = [e for e in self.entities if e.graphic.name != "debug"]
+            return msg
 
         else:
             return gameEntities.JSONforNetwork(charX=self.player.x, charY=self.player.y)
