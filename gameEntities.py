@@ -59,7 +59,9 @@ class gameEntity(object):
 def JSONforNetwork(screen=None, charY=None, charX=None, gameOver=None):
     output = {}
     if screen:
-        output[kSCREEN] = [{"graphicAsset":e.graphic.name, "x": e.x, "y": e.y} for e in screen]
+        output[kSCREEN] = [{ENTITY.kGraphicAsset: e.graphic.name,
+                            ENTITY.kX: e.x,
+                            ENTITY.kY: e.y} for e in screen]
     if charX is not None and charY is not None:
         output[kCHAR] = {'y':charY, 'x':charX}
     if gameOver:

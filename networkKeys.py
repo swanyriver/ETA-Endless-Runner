@@ -1,7 +1,6 @@
 kSCREEN = "screen"
 kCHAR = "charPos"
 kGAMEOVER = "gameOver"
-ENTITYKEYS = {"graphicAsset": unicode, "x": int, "y": int}
 
 # sadly there is no Enum class or pattern in python 2.x so this class will need to be used with extreme caution
 class ACTIONS():
@@ -12,6 +11,14 @@ class ACTIONS():
     quit = "q"
     chat = "/"
     name = "#"
+
+
+class ENTITY():
+    kGraphicAsset = "ga"
+    kX = "x"
+    kY = "y"
+ENTITYKEYS = {ENTITY.kGraphicAsset: unicode, ENTITY.kX: int, ENTITY.kY: int}
+
 
 class GAMEOVER():
     kCurentScore = "score"
