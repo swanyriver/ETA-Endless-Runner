@@ -114,6 +114,7 @@ if __name__ == "__main__":
 
     #print port so client can connect
     print "host:127.0.0.1 local"
+    print "port: "
     print port
 
     #create a new game state
