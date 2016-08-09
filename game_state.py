@@ -112,6 +112,8 @@ class Gamestate():
 
         self.player = Player()
 
+        self.isDead = False
+
         #used to block exit from entry door
         self.horizBlocker = graphicAssets.getHorizBlocker()
         self.vertBlocker = graphicAssets.getVertBlocker()
@@ -128,6 +130,8 @@ class Gamestate():
         self.entities = gameFunctions.getNewGameRoom(self)
 
 
+    def isDead(self):
+        return self.isDead
 
     def getScoresFromFile(self):
         try:
@@ -197,8 +201,9 @@ class Gamestate():
             #save scores
             self.saveScores(updatedScores)
 
-            #transmit scores
+            self.isDead = True
 
+            #transmit scores
             return gameEntities.JSONforNetwork(
                 charX=self.player.x,
                 charY=self.player.y,
