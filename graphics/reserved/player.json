@@ -1,39 +1,81 @@
 {
   "deadly": false, 
   "colors": [
-    [
-      "W  W", 
-      " WW ", 
-      " WW "
+     [
+      "   GGGG   ", 
+      " GGGGGGGG ", 
+      "GKGKKKKGRG", 
+      " GGCGGCGG "
     ], 
     [
-      "R  R", 
-      " RR ", 
-      " RR "
+      "   GGGG   ", 
+      " GGGGGGGG ", 
+      "GKGKKKKGRG", 
+      " GGCGGCGG "
+    ], 
+    [
+      "   GGGG   ", 
+      " GGGGGGGG ", 
+      "GRGKKKKGKG", 
+      " GGCGGCGG "
+    ], 
+    [
+      "   GGGG   ", 
+      " GGGGGGGG ", 
+      "GRGKKKKGKG", 
+      " GGCGGCGG "
     ]
   ], 
   "backColors": [
     [
-      "K  K", 
-      " KK ", 
-      " KK "
+      "   KKKK   ", 
+      " KKKKKKKK ", 
+      "KKKGGGGKKK", 
+      " KKKKKKKK "
     ], 
     [
-      "W  W", 
-      " WW ", 
-      " WW "
+      "   KKKK   ", 
+      " KKKKKKKK ", 
+      "KKKGGGGKKK", 
+      " KKKKKKKK "
+    ], 
+    [
+      "   KKKK   ", 
+      " KKKKKKKK ", 
+      "KKKGGGGKKK", 
+      " KKKKKKKK "
+    ], 
+    [
+      "   KKKK   ", 
+      " KKKKKKKK ", 
+      "KKKGGGGKKK", 
+      " KKKKKKKK "
     ]
   ], 
   "drawings": [
     [
-      "#  #", 
-      " ## ", 
-      " ## "
+      "   /--\\   ", 
+      " .-\\__/-. ", 
+      "(o /  \\ o)", 
+      " '.o__o.' "
     ], 
     [
-      "@  @", 
-      " ## ", 
-      " ## "
+      "   /--\\   ", 
+      " .-\\__/-. ", 
+      "(o -  - o)", 
+      " '.o__o.' "
+    ], 
+    [
+      "   /--\\   ", 
+      " .-\\__/-. ", 
+      "(o \\  / o)", 
+      " '.o__o.' "
+    ], 
+    [
+      "   /--\\   ", 
+      " .-\\__/-. ", 
+      "(o |  | o)", 
+      " '.o__o.' "
     ]
   ]
 }
