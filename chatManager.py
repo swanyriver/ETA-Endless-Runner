@@ -43,7 +43,7 @@ class ChatManager():
         except curses.error:
             pass
 
-    # retunrs (chat still in progress T/F, msg)
+    # returns (chat still in progress T/F, msg)
     def newChatCharInput(self, char_in_num):
 
         #log("(CHAT IN) %d\n"%char_in_num)

@@ -171,7 +171,7 @@ class gameState():
             try:
                 screen.addch(*pixel)
             except curses.error:
-                # curses raises a superfulous error when drawing on the bottom right char of a subdivided window
+                # curses raises a superfluous error when drawing on the bottom right char of a subdivided window
                 pass
 
     def render(self, screen):
@@ -210,7 +210,7 @@ class gameState():
             log("(CURSES-RENDER-DEATH) ERROR screen msg at end of game contained more than one entity\n")
             log("(CURSES-RENDER-DEATH) ERROR screen should only contain enemy that killed player\n")
 
-        #slow disolve player graphic
+        #slow dissolve player graphic
         playerPixels = filter(lambda p: 0 <= p.y < self.maxY and 0 <= p.x < self.maxX, self.player.getDrawing())
         while playerPixels:
             screen.erase()
@@ -316,7 +316,7 @@ def checkForUpdate(recPipe, localGame, chatMan, messagePieces):
 
         if kCHAR in networkMessage:
             posDict = networkMessage[kCHAR]
-            #assert that charpos is dict and has necesary fields with correct types
+            #assert that charpos is dict and has necessary fields with correct types
             if isinstance(posDict, dict) and all(isinstance(posDict.get(k,None),int) for k in ("y","x")):
                 localGame.updateCharPos(y=posDict['y'], x=posDict['x'])
             else:
@@ -348,7 +348,7 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
             localGame.deathAnimation(gameWindow)
             return message
 
-        # redraw game state acording to frame rate
+        # redraw game state according to frame rate
         if time.time() - lastRefresh > SCREEN_REFRESH:
             lastRefresh = time.time()
             localGame.render(gameWindow)
@@ -356,16 +356,11 @@ def constantInputReadLoop(gameWindow, networkPipe, localGame, chatMan):
         # gather input from keyboard and transmit to network if appropriate
         char_in = gameWindow.getch()
         if char_in != curses.ERR:
-            # log("input: %r %s %r\n" %
-            #                  (char_in, chr(char_in) if 0 <= char_in < 256 else "{Non Ascii}",
-            #                   curses.keyname(char_in)))
-
             if isTypingChatMessage:
                 isTypingChatMessage, msg = chatMan.newChatCharInput(char_in)
                 if not isTypingChatMessage and msg:
                     networkPipe.send(msg)
                     # display users sent message in chat log
-                    # todo delineate sent messages with a different color or leading character
                     chatMan.newChatMessage(msg[1:-1])
 
             else:

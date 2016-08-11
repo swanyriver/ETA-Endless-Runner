@@ -81,24 +81,24 @@ def checkCollision(entities, player):
     #   added in order as order defines draw & collision order with last item in array being drawn on-top and first to
     #   collide with player,  a dangerous object with a save object drawn entirely over it (safe object has higher
     #   index in array) will be entirely invisible and safe for the player to collide with.
-    collionsMap = {}
+    collisionMap = {}
     for e in entities:
-        collionsMap.update(
+        collisionMap.update(
             {point: e for point in e.getDeltaHitbox()}
         )
 
     # create a set of distinct game entities that the players hitbox is overlapping presently
-    collidedWith = list(set(collionsMap.get(point) for point in player.getDeltaHitbox() if point in collionsMap))
+    collidedWith = list(set(collisionMap.get(point) for point in player.getDeltaHitbox() if point in collisionMap))
 
     # players new position does not touch any deadly or non-deadly entities
     if not collidedWith:
         return None, None
 
-    # player has colided with something deadly
+    # player has collided with something deadly
     if any(e.isDeadly() for e in collidedWith):
         whoKilledPlayer = filter(lambda c: c.isDeadly(), collidedWith)
         otherCollisions = filter(lambda c: not c.isDeadly(), collidedWith)
-        print "(GAME-STATE COLLISION): player was killed by the entitie(s): ", whoKilledPlayer, \
+        print "(GAME-STATE COLLISION): player was killed by the entities(s): ", whoKilledPlayer, \
             ((",   player also collided with: " + str(otherCollisions)) if otherCollisions else "")
 
         return DEAD, whoKilledPlayer[0]

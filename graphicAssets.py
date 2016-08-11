@@ -126,7 +126,7 @@ class GraphicAsset():
         if not self.height or not self.width:
             raise  ParseAssetError("drawings arrays must not be empty")
 
-        #verify drawings are uniformly defined (same height and width for each and each string is the same lengt
+        #verify drawings are uniformly defined (same height and width for each and each string is the same length
         for d in self.drawings:
             if not isinstance(d, list):
                 raise ParseAssetError("drawings must contain arrays of strings")

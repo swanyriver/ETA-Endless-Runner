@@ -40,7 +40,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
             if myMessageQue:
                 lock.acquire()
-                # copy refrence to strings to be sent and empty que in dictionary
+                # copy reference to strings to be sent and empty que in dictionary
                 messagesToSend = list(myMessageQue)
                 del myMessageQue[:]
                 lock.release()

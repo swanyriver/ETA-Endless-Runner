@@ -49,7 +49,7 @@ EAST = 2
 WEST = 3
 SIDES = [NORTH, SOUTH, EAST, WEST]
 SIDENAMES = {NORTH:"NORTH", SOUTH:"SOUTH", EAST:"EAST", WEST:"WEST"}
-GATESZIE = 1.25
+GATESIZE = 1.25
 
 def playerOnSide(player, grid):
     """
@@ -101,7 +101,7 @@ def getVertWall(asset, xpos, ystart, yend, withGate=False, withPlayer=False, pla
         return output
 
     if withGate:
-        while yend - ystart - asset.height - 1 > player.getHeight() * GATESZIE:
+        while yend - ystart - asset.height - 1 > player.getHeight() * GATESIZE:
             if random.choice(["up","down"]) == "up":
                 output.append(gameEntities.gameEntity(asset, ystart, xpos))
                 ystart += asset.height
@@ -139,7 +139,7 @@ def getHorizWall(asset, ypos, xstart, xend, withGate=False, withPlayer=False, pl
             xend -= asset.width
             output.append(gameEntities.gameEntity(asset, ypos, xend))
 
-        while xend - xstart - asset.width - 1 > player.getWidth() * GATESZIE:
+        while xend - xstart - asset.width - 1 > player.getWidth() * GATESIZE:
             if random.choice(["left", "right"]) == "left":
                 output.append(gameEntities.gameEntity(asset, ypos, xstart))
                 xstart += asset.width
@@ -328,7 +328,7 @@ def getNewGameRoom(Game):
                         for y in range(Game.grid.height)
                         for x in range(Game.grid.width)).difference(avoidHitBoxMap)
 
-    #place enimies while we have yet to place enough and any of our enimies will fit in the remaining space
+    #place enemies while we have yet to place enough and any of our enemies will fit in the remaining space
     while enemiesToPlace and enemies:
         nextEnemy = random.choice(enemies)
         availablePlacements = [ (y,x) for y,x in negativeSpace

@@ -6,7 +6,7 @@ import gameFunctions
 from networkKeys import *
 
 #player class: initializes location to outside the grid
-#player class is now a subclass of gameEntitiy and iherits the folowing properties/methods
+#player class is now a subclass of gameEntity and inherits the following properties/methods
 #  x
 #  y
 #  graphic (reference to graphic asset instance)
@@ -163,7 +163,7 @@ class Gamestate():
         self.gameTime = (self.t1 - self.t0)
 
 
-    # called once at begining of game to create first game rendering
+    # called once at beginning of game to create first game rendering
     # thenceforth called by game state after each player move and result returned to Network out
     def get_update(self):
         return gameEntities.JSONforNetwork(screen=self.entities, charX=self.player.x, charY=self.player.y)

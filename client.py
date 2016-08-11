@@ -65,7 +65,7 @@ def main(argv):
             if not updateFromServer:
                 networkEnd.send("/DISCONNECTED FROM SERVER\n")
                 break
-            #send network update to cureses
+            #send network update to curses
             networkEnd.send(updateFromServer)
         except socket.timeout:
             pass
