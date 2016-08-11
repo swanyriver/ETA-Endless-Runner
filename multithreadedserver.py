@@ -25,8 +25,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         #Thread and socket initialisation
         lock.acquire()
         # if not all actions have been taken assign one set to this thread
-        if availableActionSets:
-            allowedActionsForThreads[cur_thread.ident] = availableActionSets.pop()
+        game, myActions = gameMan.getGameAndActions()
+
 
         # send first message of game state before player takes first move
         self.request.sendall(game.get_update()+ "\n")
@@ -78,8 +78,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                     game.addUserName(received[1:].strip())
                     lock.release()
 
-                elif cur_thread.ident in allowedActionsForThreads and \
-                                received in allowedActionsForThreads[cur_thread.ident]:
+                elif myActions and received in myActions:
                     lock.acquire()
                     updatedState = game.get_change_request(received)
                     for threadIdent, theirmessageQue in threadOutgoingMessages.items():
@@ -99,6 +98,21 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
+
+
+class GameManager():
+    def __init__(self, singlePlayer=False):
+        self.activeGame = None
+        upDown = [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right]
+        leftRight = [networkKeys.ACTIONS.up, networkKeys.ACTIONS.down]
+        self.ACTIONSETS = (upDown + leftRight) if singlePlayer else (upDown, leftRight)
+        self.availableActionSets = None
+    def getGameAndActions(self):
+        if not self.activeGame or self.activeGame.isDead:
+            self.activeGame = game_state.Gamestate()
+            self.availableActionSets = list(self.ACTIONSETS)
+        return self.activeGame, None if not self.availableActionSets else self.availableActionSets.pop()
+
 
 if __name__ == "__main__":
     # Port 0 selects an arbitrary unused port
@@ -123,22 +137,11 @@ if __name__ == "__main__":
     print "host:127.0.0.1 local"
     print "port: ",
     print port
-    
+
 
     #create a new game state
-    game = game_state.Gamestate()
-
-    allowedActionsForThreads = {}
-
-    availableActionSets = [
-        [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right],
-        [networkKeys.ACTIONS.up, networkKeys.ACTIONS.down],
-    ]
-
-    if "-s" in sys.argv:
-        availableActionSets = [
-            [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right, networkKeys.ACTIONS.up, networkKeys.ACTIONS.down]
-        ]
+    #game = game_state.Gamestate()
+    gameMan = GameManager(singlePlayer="-s" in sys.argv)
 
     threadOutgoingMessages = {}
 

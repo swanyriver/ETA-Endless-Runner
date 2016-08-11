@@ -130,9 +130,6 @@ class Gamestate():
         self.entities = gameFunctions.getNewGameRoom(self)
 
 
-    def isDead(self):
-        return self.isDead
-
     def getScoresFromFile(self):
         try:
             return json.load(open(Gamestate.SCORE_FILENAME))
