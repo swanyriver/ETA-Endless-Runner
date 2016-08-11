@@ -1,6 +1,7 @@
 import threading
 import SocketServer
 import sys
+import socket
 
 import networkKeys
 import game_state
@@ -46,12 +47,17 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
                 # send all messages in que after releasing lock
                 for msg in messagesToSend:
-                    self.request.sendall(msg + "\n")
+                    try:
+                        self.request.sendall(msg + "\n")
+                    except socket.error:
+                        break
 
 
             received=""
             try:
                 received=self.request.recv(5000)
+                if not received or len(received) == 0:
+                    break
                 received = received.strip()
             except:
                 pass
