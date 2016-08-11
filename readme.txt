@@ -3,9 +3,11 @@ Members: Megan Fanning, Miranda Weldon, Brandon Swanson
 =======
 
 To run program: 
-first run server.py, this will print out the IP and port 
-(we have hard coded the ip to local and the port to 9999 for testing).
-Next begin the client.py ($ python client.py 127.0.0.1 9999)
+first run 
+python server.py [port], if left to 0 or set to a invalid port it will randomize a valid port.
+this will print out the IP and port 
+(we have hard coded the ip to local and the port to 9999 for testing)
+Next begin the client.py ($ python client.py 127.0.0.1 [port])
 once the server and the client connect the game will begin (a curses screen will open and display images).
 
 Game play mechanics:
