@@ -35,7 +35,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         threadOutgoingMessages[cur_thread.ident] = myMessageQue
         lock.release()
 
-        while serverActive:
+        while serverActive and (not game.isDead or myMessageQue):
 
             if myMessageQue:
                 lock.acquire()
@@ -94,6 +94,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 else:
                     continue
 
+        print "Client connection loop has ended"
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -105,7 +106,8 @@ class GameManager():
         self.activeGame = None
         upDown = [networkKeys.ACTIONS.left, networkKeys.ACTIONS.right]
         leftRight = [networkKeys.ACTIONS.up, networkKeys.ACTIONS.down]
-        self.ACTIONSETS = (upDown + leftRight) if singlePlayer else (upDown, leftRight)
+        self.ACTIONSETS = [[networkKeys.ACTIONS.left, networkKeys.ACTIONS.right,
+                            networkKeys.ACTIONS.up, networkKeys.ACTIONS.down]] if singlePlayer else (upDown, leftRight)
         self.availableActionSets = None
     def getGameAndActions(self):
         if not self.activeGame or self.activeGame.isDead:

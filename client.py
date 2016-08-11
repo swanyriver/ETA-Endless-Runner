@@ -62,10 +62,16 @@ def main(argv):
             updateFromServer = s.recv(BUFFER_SIZE)
             updateFromServer = updateFromServer.decode()
             log("(NET MSG-TO-CURSES):" + updateFromServer + "\n")
+            if not updateFromServer:
+                networkEnd.send("/DISCONNECTED FROM SERVER\n")
+                break
             #send network update to cureses
             networkEnd.send(updateFromServer)
         except socket.timeout:
             pass
+
+    while cursesProcess.is_alive():
+        pass
 
     ############################################################
     #### curses process has ended ##############################
