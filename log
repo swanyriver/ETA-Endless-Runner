@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "client.py", line 87, in <module>
-    main(sys.argv)
-  File "client.py", line 37, in main
-    s.connect((TCP_IP, TCP_PORT))
-  File "/usr/lib/python2.7/socket.py", line 228, in meth
-    return getattr(self._sock,name)(*args)
-socket.error: [Errno 111] Connection refused

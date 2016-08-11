@@ -102,6 +102,14 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
         print "Client connection loop has ended"
 
+        #return actions to available pool if game in progress
+        if not game.isDead:
+            gameMan.returnActions(myActions)
+
+        # remove this threads outgoing message que
+        del threadOutgoingMessages[cur_thread.ident]
+
+
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
@@ -120,6 +128,9 @@ class GameManager():
             self.activeGame = game_state.Gamestate()
             self.availableActionSets = list(self.ACTIONSETS)
         return self.activeGame, None if not self.availableActionSets else self.availableActionSets.pop()
+
+    def returnActions(self, actions):
+        self.availableActionSets.append(actions)
 
 
 if __name__ == "__main__":
