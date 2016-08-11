@@ -294,7 +294,7 @@ def displayGraphicLibrary(ga=None):
 
     for g in ga:
         print "Asset: %s    H:%d  W:%d" % (g.name, g.height, g.width), "  <DEADLY>" if g.deadly else ""
-        print "\nDRAWING AND HIBOX:"
+        print "\nDRAWING AND HITBOX:"
         print drawCharacterAndHitbox(g.drawings[0], g.hitbox)
 
         if len(g.drawings) > 1:
@@ -317,16 +317,16 @@ def displayGraphicLibrary(ga=None):
         print "--------------------------------------"
         print "--------------------------------------"
 
-        print "\n\nCATEGORIES:"
-        for c in set(g.category for g in ga):
-            assetsInCategory = [g for g in ga if g.category == c]
-            print "(%d)"%len(assetsInCategory), c, "\t",
-            print ["<%s>"%g.name if g.deadly else g.name for g in assetsInCategory]
+    print "\n\nCATEGORIES:"
+    for c in set(g.category for g in ga):
+        assetsInCategory = [g for g in ga if g.category == c]
+        print "(%d)"%len(assetsInCategory), c, "\t",
+        print ["<%s>"%g.name if g.deadly else g.name for g in assetsInCategory]
 
-        print ""
-        #create galibraryobject
-        gaL = GraphicsLibrary({g.name:g for g in ga} )
-        print "catagories with sufficient decor and enemies:", gaL.getCategories()
+    print ""
+    #create galibraryobject
+    gaL = GraphicsLibrary({g.name:g for g in ga} )
+    print "categories with sufficient decor and enemies:", gaL.getCategories()
 
 
 
