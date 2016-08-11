@@ -189,7 +189,7 @@ class gameState():
         interval = .75
         minInterval = .2
         factor = .7
-        PLAYER_DISSOLVE_INTERVAL = .5
+        PLAYER_DISSOLVE_INTERVAL = 1.0 / len(self.player.getDeltaHitbox())
         WAIT_IN_BLACKNESS = 1
 
         if len(self.entities) == 1:
