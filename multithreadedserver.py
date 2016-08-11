@@ -102,11 +102,18 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 if __name__ == "__main__":
     # Port 0 selects an arbitrary unused port
-    HOST, PORT = "localhost", 9999
+    HOST = "localhost"
+
+    try:
+        PORT = int(sys.argv[1])
+        if not 1024 < PORT <= 65536: raise ValueError
+    except (IndexError, ValueError):
+        print "Valid Port not supplied as first argument, Arbitrarily Chosen Port will be used"
+        PORT = 0
+
+    #global variables/objects must be created in main prior to threading
     ##create lock object
     lock = threading.Lock()
-    #global variables/objects must be created in main prior to threading
-    global count
 
      #-- client code --#
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
@@ -114,8 +121,9 @@ if __name__ == "__main__":
 
     #print port so client can connect
     print "host:127.0.0.1 local"
-    print "port: "
+    print "port: ",
     print port
+    
 
     #create a new game state
     game = game_state.Gamestate()
