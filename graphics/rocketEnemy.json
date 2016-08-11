@@ -4,22 +4,22 @@
   "colors": [
     [
       "  C  ", 
-      "CC CC", 
-      " C C "
+      "CCCCC", 
+      " CCC "
     ]
   ], 
   "backColors": [
     [
       "  R  ", 
-      "RR RR", 
-      " R R "
+      "RRRRR", 
+      " RRR "
     ]
   ], 
   "drawings": [
     [
       "  ^  ", 
       "<( )>", 
-      " / \\ "
+      " /-\\ "
     ]
   ]
 }
